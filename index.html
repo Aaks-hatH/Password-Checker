@@ -313,7 +313,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Password Strength Checker</h1>
+    <h1> Password Strength Checker</h1>
     <p class="subtitle">Made By Aakshat Hariharan</p>
 
     <!-- Password Input -->
@@ -350,32 +350,32 @@
       <!-- Analysis Cards -->
       <div class="analysis-grid">
         <div class="analysis-card" id="lengthCard">
-          <div class="analysis-icon">📏</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Length</div>
           <div class="analysis-value" id="lengthValue">0</div>
         </div>
         <div class="analysis-card" id="uppercaseCard">
-          <div class="analysis-icon">🔤</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Uppercase</div>
           <div class="analysis-value" id="uppercaseValue">No</div>
         </div>
         <div class="analysis-card" id="lowercaseCard">
-          <div class="analysis-icon">🔡</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Lowercase</div>
           <div class="analysis-value" id="lowercaseValue">No</div>
         </div>
         <div class="analysis-card" id="numbersCard">
-          <div class="analysis-icon">🔢</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Numbers</div>
           <div class="analysis-value" id="numbersValue">No</div>
         </div>
         <div class="analysis-card" id="symbolsCard">
-          <div class="analysis-icon">🔣</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Symbols</div>
           <div class="analysis-value" id="symbolsValue">No</div>
         </div>
         <div class="analysis-card" id="entropyCard">
-          <div class="analysis-icon">🎲</div>
+          <div class="analysis-icon"></div>
           <div class="analysis-label">Entropy</div>
           <div class="analysis-value" id="entropyValue">0</div>
         </div>
@@ -390,7 +390,7 @@
       <!-- Suggestions -->
       <div class="suggestions-section">
         <div class="suggestions-title">
-          <span>💡</span>
+          <span></span>
           <span>How to Improve</span>
         </div>
         <div id="suggestionsList"></div>
@@ -429,7 +429,7 @@
     togglePassword.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
       passwordInput.type = type;
-      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+      togglePassword.textContent = type === 'password' ? '👁️' : '😑';
     });
 
     // Analyze password on input
