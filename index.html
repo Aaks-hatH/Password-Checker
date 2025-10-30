@@ -593,25 +593,25 @@
       const feedback = [];
 
       if (score >= 75) {
-        feedback.push({ type: 'success', icon: '✅', text: 'Excellent password strength!' });
+        feedback.push({ type: 'success', icon: '❌', text: 'Excellent password strength!' });
       } else if (score >= 60) {
-        feedback.push({ type: 'success', icon: '✓', text: 'Good password strength' });
+        feedback.push({ type: 'success', icon: '❌', text: 'Good password strength' });
       } else if (score >= 40) {
-        feedback.push({ type: 'warning', icon: '⚠️', text: 'Password could be stronger' });
+        feedback.push({ type: 'warning', icon: '❌', text: 'Password could be stronger' });
       } else {
         feedback.push({ type: 'error', icon: '❌', text: 'Weak password - highly vulnerable' });
       }
 
       if (analysis.isCommon) {
-        feedback.push({ type: 'error', icon: '🚨', text: 'Contains common password patterns' });
+        feedback.push({ type: 'error', icon: '❌', text: 'Contains common password patterns' });
       }
 
       if (analysis.hasRepeating) {
-        feedback.push({ type: 'warning', icon: '⚠️', text: 'Contains repeating characters' });
+        feedback.push({ type: 'warning', icon: '❌', text: 'Contains repeating characters' });
       }
 
       if (analysis.hasSequential) {
-        feedback.push({ type: 'warning', icon: '⚠️', text: 'Contains sequential characters' });
+        feedback.push({ type: 'warning', icon: '❌', text: 'Contains sequential characters' });
       }
 
       if (analysis.length < 8) {
