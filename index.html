@@ -44,6 +44,101 @@
       font-size: 0.9rem;
     }
 
+    .link-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .link-banner:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .link-content {
+      flex: 1;
+    }
+
+    .link-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .link-desc {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .link-arrow {
+      font-size: 1.5rem;
+      opacity: 0.8;
+    }
+
+    .weak-password-cta {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      text-align: center;
+      display: none;
+    }
+
+    .weak-password-cta.show {
+      display: block;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .weak-password-cta h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .weak-password-cta p {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-bottom: 15px;
+    }
+
+    .cta-btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .cta-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
     .input-container {
       position: relative;
       margin-bottom: 25px;
@@ -82,7 +177,6 @@
       color: #333;
     }
 
-    /* Strength Meter */
     .strength-section {
       margin-bottom: 30px;
     }
@@ -127,7 +221,6 @@
       margin-top: 8px;
     }
 
-    /* Strength levels */
     .very-weak { background: #e53e3e; }
     .weak { background: #dd6b20; }
     .fair { background: #d69e2e; }
@@ -142,7 +235,6 @@
     .text-strong { color: #2f855a; }
     .text-very-strong { color: #276749; }
 
-    /* Analysis Cards */
     .analysis-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -185,7 +277,6 @@
       color: #333;
     }
 
-    /* Feedback Section */
     .feedback-section {
       margin-bottom: 25px;
     }
@@ -234,7 +325,6 @@
       flex-shrink: 0;
     }
 
-    /* Suggestions */
     .suggestions-section {
       background: #f7f9fc;
       padding: 20px;
@@ -268,7 +358,6 @@
       flex-shrink: 0;
     }
 
-    /* Time to crack */
     .crack-time {
       background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
       color: white;
@@ -308,6 +397,11 @@
       .analysis-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .link-banner, .weak-password-cta {
+        flex-direction: column;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -315,6 +409,20 @@
   <div class="container">
     <h1>Password Strength Checker</h1>
     <p class="subtitle">Made By Aakshat Hariharan</p>
+
+    <a href="https://aaks-hath.github.io/Password-Generator/" class="link-banner">
+      <div class="link-content">
+        <div class="link-title"> Generate Strong Password</div>
+        <div class="link-desc">Create secure passwords instantly</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <div class="weak-password-cta" id="weakPasswordCta">
+      <h3> Your Password is Weak!</h3>
+      <p>Need a stronger password? Try our generator to create a secure one instantly.</p>
+      <a href="https://aaks-hath.github.io/Password-Generator/" class="cta-btn">Generate Strong Password</a>
+    </div>
 
     <div class="input-container">
       <input 
@@ -370,7 +478,6 @@
   </div>
 
   <script>
-    // grabbing DOM nodes
     const inputPwd = document.getElementById('pwdInput');
     const btnTogglePwd = document.getElementById('btnTogglePwd');
     const boxResult = document.getElementById('resultBox');
@@ -381,27 +488,26 @@
     const txtCrackTime = document.getElementById('txtCrackTime');
     const listFeedback = document.getElementById('listFeedback');
     const listSuggestions = document.getElementById('listSuggestions');
+    const weakPasswordCta = document.getElementById('weakPasswordCta');
 
-    // top 50 or so common passwords
     const weakList = [
       'password','123456','123456789','guest','qwerty','111111','letmein',
       'monkey','abc123','123123','password1','welcome','dragon','admin','login',
       'football','sunshine','iloveyou','princess','starwars','qwertyuiop'
     ];
 
-    // toggle password visibility
     btnTogglePwd.addEventListener('click', () => {
       const hidden = inputPwd.type === 'password';
       inputPwd.type = hidden ? 'text' : 'password';
       btnTogglePwd.textContent = hidden ? '😑' : '👁️';
     });
 
-    // update analysis when typing
     inputPwd.addEventListener('input', e => {
       const val = e.target.value;
       if (!val) {
         boxResult.style.display = 'none';
         msgEmpty.style.display = 'block';
+        weakPasswordCta.classList.remove('show');
         return;
       }
       msgEmpty.style.display = 'none';
@@ -428,9 +534,14 @@
       showCrackTime(data);
       makeFeedback(data, score);
       makeSuggestions(data);
+
+      if (score < 50) {
+        weakPasswordCta.classList.add('show');
+      } else {
+        weakPasswordCta.classList.remove('show');
+      }
     }
 
-    // shows stats in cards
     function showStats(d) {
       document.getElementById('valLength').textContent = d.len;
       document.getElementById('valUpper').textContent = d.upper ? 'Yes' : 'No';
@@ -438,6 +549,13 @@
       document.getElementById('valNums').textContent = d.num ? 'Yes' : 'No';
       document.getElementById('valSymbols').textContent = d.sym ? 'Yes' : 'No';
       document.getElementById('valEntropy').textContent = d.entropy.toFixed(1);
+
+      document.getElementById('cardLength').className = 'analysis-card ' + (d.len >= 12 ? 'pass' : 'fail');
+      document.getElementById('cardUpper').className = 'analysis-card ' + (d.upper ? 'pass' : 'fail');
+      document.getElementById('cardLower').className = 'analysis-card ' + (d.lower ? 'pass' : 'fail');
+      document.getElementById('cardNums').className = 'analysis-card ' + (d.num ? 'pass' : 'fail');
+      document.getElementById('cardSymbols').className = 'analysis-card ' + (d.sym ? 'pass' : 'fail');
+      document.getElementById('cardEntropy').className = 'analysis-card ' + (d.entropy > 60 ? 'pass' : 'fail');
     }
 
     function scorePassword(d) {
@@ -478,7 +596,7 @@
     function showCrackTime(d) {
       const charset = (d.lower ? 26 : 0) + (d.upper ? 26 : 0) + (d.num ? 10 : 0) + (d.sym ? 32 : 0);
       const combos = Math.pow(charset, d.len);
-      const guessesPerSec = 1e9; // 1B guesses/sec
+      const guessesPerSec = 1e9;
       const secs = combos / guessesPerSec;
       txtCrackTime.textContent = formatTime(secs);
     }
