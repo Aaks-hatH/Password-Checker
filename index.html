@@ -3,665 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Strength Checker</title>
+  <title>Password Pro</title>
+  <!-- 1. External Engines & Clients -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+  
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    /* YOUR ORIGINAL STYLING */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #333; }
+    .container { background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+    h1 { text-align: center; color: #1e293b; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 0.9rem; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    /* GENERATOR UI */
+    .gen-section { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+    .gen-text { font-family: 'Courier New', monospace; font-weight: bold; color: #2563eb; font-size: 1.1rem; }
+    .btn-gen { background: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-gen:hover { background: #1d4ed8; }
 
-    .container {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
+    /* INPUT UI */
+    .input-container { position: relative; margin-bottom: 25px; }
+    .password-input { width: 100%; padding: 18px; font-size: 1.1rem; border: 2px solid #e2e8f0; border-radius: 12px; outline: none; transition: border 0.3s; }
+    .password-input:focus { border-color: #2563eb; }
 
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 2rem;
-    }
+    /* RESULTS UI */
+    .strength-bar-container { height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+    .strength-bar { height: 100%; transition: width 0.4s ease; width: 0%; }
+    .very-weak { background: #ef4444; } .weak { background: #f97316; } .fair { background: #facc15; } .good { background: #22c55e; } .strong { background: #15803d; }
 
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 0.9rem;
-    }
+    .crack-card { background: #1e293b; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .crack-value { font-size: 1.8rem; font-weight: 800; display: block; }
 
-    .link-banner {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      text-decoration: none;
-      transition: all 0.3s;
-    }
+    /* OLD CALCULATOR GRID */
+    .old-calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .calc-card { background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.8rem; font-weight: 600; }
 
-    .link-banner:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .link-content {
-      flex: 1;
-    }
-
-    .link-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .link-desc {
-      font-size: 0.85rem;
-      opacity: 0.9;
-    }
-
-    .link-arrow {
-      font-size: 1.5rem;
-      opacity: 0.8;
-    }
-
-    .weak-password-cta {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      text-align: center;
-      display: none;
-    }
-
-    .weak-password-cta.show {
-      display: block;
-      animation: slideIn 0.4s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .weak-password-cta h3 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-    }
-
-    .weak-password-cta p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      margin-bottom: 15px;
-    }
-
-    .cta-btn {
-      background: white;
-      color: #667eea;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .cta-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .input-container {
-      position: relative;
-      margin-bottom: 25px;
-    }
-
-    .password-input {
-      width: 100%;
-      padding: 18px 50px 18px 18px;
-      font-size: 1.1rem;
-      border: 2px solid #e1e8ed;
-      border-radius: 12px;
-      outline: none;
-      transition: all 0.3s;
-      font-family: 'Courier New', monospace;
-    }
-
-    .password-input:focus {
-      border-color: #1e3c72;
-      box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: #666;
-      padding: 5px;
-    }
-
-    .toggle-password:hover {
-      color: #333;
-    }
-
-    .strength-section {
-      margin-bottom: 30px;
-    }
-
-    .strength-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .strength-label {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .strength-score {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .strength-bar-container {
-      height: 12px;
-      background: #e1e8ed;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-
-    .strength-bar {
-      height: 100%;
-      transition: all 0.4s ease;
-      border-radius: 10px;
-      width: 0%;
-    }
-
-    .strength-text {
-      text-align: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-
-    .very-weak { background: #e53e3e; }
-    .weak { background: #dd6b20; }
-    .fair { background: #d69e2e; }
-    .good { background: #38a169; }
-    .strong { background: #2f855a; }
-    .very-strong { background: #276749; }
-
-    .text-very-weak { color: #e53e3e; }
-    .text-weak { color: #dd6b20; }
-    .text-fair { color: #d69e2e; }
-    .text-good { color: #38a169; }
-    .text-strong { color: #2f855a; }
-    .text-very-strong { color: #276749; }
-
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .analysis-card {
-      background: #f7f9fc;
-      padding: 15px;
-      border-radius: 12px;
-      text-align: center;
-      border: 2px solid #e1e8ed;
-    }
-
-    .analysis-card.pass {
-      border-color: #38a169;
-      background: #f0fff4;
-    }
-
-    .analysis-card.fail {
-      border-color: #e53e3e;
-      background: #fff5f5;
-    }
-
-    .analysis-icon {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
-    }
-
-    .analysis-label {
-      font-size: 0.85rem;
-      color: #666;
-      margin-bottom: 4px;
-    }
-
-    .analysis-value {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #333;
-    }
-
-    .feedback-section {
-      margin-bottom: 25px;
-    }
-
-    .feedback-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
-    }
-
-    .feedback-list {
-      list-style: none;
-    }
-
-    .feedback-item {
-      padding: 12px 15px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 0.9rem;
-    }
-
-    .feedback-item.success {
-      background: #f0fff4;
-      color: #276749;
-      border-left: 4px solid #38a169;
-    }
-
-    .feedback-item.warning {
-      background: #fffaf0;
-      color: #744210;
-      border-left: 4px solid #d69e2e;
-    }
-
-    .feedback-item.error {
-      background: #fff5f5;
-      color: #742a2a;
-      border-left: 4px solid #e53e3e;
-    }
-
-    .feedback-icon {
-      font-size: 1.2rem;
-      flex-shrink: 0;
-    }
-
-    .suggestions-section {
-      background: #f7f9fc;
-      padding: 20px;
-      border-radius: 12px;
-      border: 2px solid #e1e8ed;
-    }
-
-    .suggestions-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .suggestion-item {
-      padding: 10px 0;
-      color: #666;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .suggestion-item::before {
-      content: "→";
-      color: #1e3c72;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .crack-time {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      color: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      text-align: center;
-    }
-
-    .crack-time-label {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      margin-bottom: 8px;
-    }
-
-    .crack-time-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-    }
-
-    .empty-state {
-      text-align: center;
-      color: #999;
-      padding: 40px;
-      font-style: italic;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 25px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      .analysis-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .link-banner, .weak-password-cta {
-        flex-direction: column;
-        text-align: center;
-      }
-    }
+    .suggestions { font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+    .suggestions ul { margin-top: 10px; padding-left: 20px; color: #475569; }
+    .db-status { font-size: 0.7rem; text-align: center; margin-top: 10px; color: #94a3b8; }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h1>Password Strength Checker</h1>
-    <p class="subtitle">Made By Aakshat Hariharan</p>
+    <h1>Password Security Pro</h1>
+    <p class="subtitle">Cloud-connected analysis with Supabase</p>
 
-    <a href="https://aaks-hath.github.io/Password-Generator/" class="link-banner">
-      <div class="link-content">
-        <div class="link-title"> Generate Strong Password</div>
-        <div class="link-desc">Create secure passwords instantly</div>
-      </div>
-      <div class="link-arrow">→</div>
-    </a>
-
-    <div class="weak-password-cta" id="weakPasswordCta">
-      <h3> Your Password is Weak!</h3>
-      <p>Need a stronger password? Try our generator to create a secure one instantly.</p>
-      <a href="https://aaks-hath.github.io/Password-Generator/" class="cta-btn">Generate Strong Password</a>
+    <!-- 1. GENERATOR -->
+    <div class="gen-section">
+      <div class="gen-text" id="genText">Click to generate...</div>
+      <button class="btn-gen" onclick="generateSecurePwd()">Generate</button>
     </div>
 
+    <!-- 2. INPUT -->
     <div class="input-container">
-      <input 
-        type="password" 
-        class="password-input" 
-        id="pwdInput"
-        placeholder="Enter a password to analyze..."
-        autocomplete="off"
-      >
-      <button class="toggle-password" id="btnTogglePwd">👁️</button>
+      <input type="password" class="password-input" id="pwdInput" placeholder="Enter password to check...">
     </div>
 
-    <div id="resultBox" style="display:none;">
-      <div class="strength-section">
-        <div class="strength-header">
-          <span class="strength-label">Password Strength</span>
-          <span class="strength-score" id="scoreDisplay">0/100</span>
-        </div>
-        <div class="strength-bar-container">
-          <div class="strength-bar" id="barStrength"></div>
-        </div>
-        <div class="strength-text" id="txtStrength"></div>
+    <!-- 3. RESULTS (Hidden until typing) -->
+    <div id="results" style="display: none;">
+      <div class="strength-bar-container">
+        <div id="strBar" class="strength-bar"></div>
+      </div>
+      <div id="scoreLabel" style="text-align: right; font-weight: bold; margin-bottom: 15px;">0%</div>
+
+      <div class="crack-card">
+        <span style="font-size: 0.8rem; opacity: 0.7;">Time to Crack (Deep Engine)</span>
+        <span class="crack-value" id="crackTime">-</span>
       </div>
 
-      <div class="crack-time">
-        <div class="crack-time-label">Estimated Time to Crack</div>
-        <div class="crack-time-value" id="txtCrackTime">-</div>
+      <!-- THE OLD CALCULATOR STATS -->
+      <div class="old-calc-grid">
+        <div class="calc-card">Length: <span id="statLen">0</span></div>
+        <div class="calc-card">Symbols: <span id="statSym">No</span></div>
+        <div class="calc-card">Numbers: <span id="statNum">No</span></div>
       </div>
 
-      <div class="analysis-grid">
-        <div class="analysis-card" id="cardLength"><div class="analysis-label">Length</div><div id="valLength">0</div></div>
-        <div class="analysis-card" id="cardUpper"><div class="analysis-label">Uppercase</div><div id="valUpper">No</div></div>
-        <div class="analysis-card" id="cardLower"><div class="analysis-label">Lowercase</div><div id="valLower">No</div></div>
-        <div class="analysis-card" id="cardNums"><div class="analysis-label">Numbers</div><div id="valNums">No</div></div>
-        <div class="analysis-card" id="cardSymbols"><div class="analysis-label">Symbols</div><div id="valSymbols">No</div></div>
-        <div class="analysis-card" id="cardEntropy"><div class="analysis-label">Entropy</div><div id="valEntropy">0</div></div>
+      <div class="suggestions">
+        <strong>Security Recommendations:</strong>
+        <ul id="suggestionList"></ul>
       </div>
-
-      <div class="feedback-section">
-        <div class="feedback-title">Analysis Results</div>
-        <ul class="feedback-list" id="listFeedback"></ul>
-      </div>
-
-      <div class="suggestions-section">
-        <div class="suggestions-title">How to Improve</div>
-        <div id="listSuggestions"></div>
-      </div>
-    </div>
-
-    <div id="msgEmpty" class="empty-state">
-      Enter a password above to see detailed security analysis
+      <div class="db-status" id="dbStatus">Syncing</div>
     </div>
   </div>
 
   <script>
-    const inputPwd = document.getElementById('pwdInput');
-    const btnTogglePwd = document.getElementById('btnTogglePwd');
-    const boxResult = document.getElementById('resultBox');
-    const msgEmpty = document.getElementById('msgEmpty');
-    const barStrength = document.getElementById('barStrength');
-    const txtStrength = document.getElementById('txtStrength');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const txtCrackTime = document.getElementById('txtCrackTime');
-    const listFeedback = document.getElementById('listFeedback');
-    const listSuggestions = document.getElementById('listSuggestions');
-    const weakPasswordCta = document.getElementById('weakPasswordCta');
+    // --- CONFIGURATION ---
+    const SUPABASE_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const weakList = [
-      'password','123456','123456789','guest','qwerty','111111','letmein',
-      'monkey','abc123','123123','password1','welcome','dragon','admin','login',
-      'football','sunshine','iloveyou','princess','starwars','qwertyuiop'
-    ];
+    const input = document.getElementById('pwdInput');
+    let dbTimer;
 
-    btnTogglePwd.addEventListener('click', () => {
-      const hidden = inputPwd.type === 'password';
-      inputPwd.type = hidden ? 'text' : 'password';
-      btnTogglePwd.textContent = hidden ? '😑' : '👁️';
-    });
+    // --- 1. SAFE GENERATOR ---
+    function generateSecurePwd() {
+      // Modern standard: 16+ chars, variety of types
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+      let pwd = "";
+      for (let i = 0; i < 18; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('genText').innerText = pwd;
+      input.value = pwd;
+      handleAnalysis(pwd);
+    }
 
-    inputPwd.addEventListener('input', e => {
-      const val = e.target.value;
-      if (!val) {
-        boxResult.style.display = 'none';
-        msgEmpty.style.display = 'block';
-        weakPasswordCta.classList.remove('show');
+    // --- 2. OLD CALCULATOR LOGIC (Instant) ---
+    function runOldStats(pwd) {
+      document.getElementById('statLen').innerText = pwd.length;
+      document.getElementById('statSym').innerText = /[^A-Za-z0-9]/.test(pwd) ? "Yes" : "No";
+      document.getElementById('statNum').innerText = /\d/.test(pwd) ? "Yes" : "No";
+    }
+
+    // --- 3. DEEP ENGINE & DATABASE (zxcvbn + Supabase) ---
+    input.addEventListener('input', (e) => handleAnalysis(e.target.value));
+
+    async function handleAnalysis(pwd) {
+      if (!pwd) {
+        document.getElementById('results').style.display = 'none';
         return;
       }
-      msgEmpty.style.display = 'none';
-      boxResult.style.display = 'block';
-      runAnalysis(val);
-    });
+      document.getElementById('results').style.display = 'block';
 
-    function runAnalysis(pwd) {
-      const data = {
-        len: pwd.length,
-        upper: /[A-Z]/.test(pwd),
-        lower: /[a-z]/.test(pwd),
-        num: /\d/.test(pwd),
-        sym: /[^A-Za-z0-9]/.test(pwd),
-        common: weakList.some(w => pwd.toLowerCase().includes(w)),
-        repeat: /(.)\1{2,}/.test(pwd),
-        seq: checkSequence(pwd),
-        entropy: calcEntropy(pwd)
-      };
+      // Local UI Update (Instant)
+      runOldStats(pwd);
+      const analysis = zxcvbn(pwd);
+      updateUI(analysis);
 
-      showStats(data);
-      const score = scorePassword(data);
-      drawStrength(score);
-      showCrackTime(data);
-      makeFeedback(data, score);
-      makeSuggestions(data);
-
-      if (score < 50) {
-        weakPasswordCta.classList.add('show');
-      } else {
-        weakPasswordCta.classList.remove('show');
-      }
+      // Database Sync (Throttled 1 second after typing stops)
+      clearTimeout(dbTimer);
+      dbTimer = setTimeout(() => syncToSupabase(pwd, analysis), 1000);
     }
 
-    function showStats(d) {
-      document.getElementById('valLength').textContent = d.len;
-      document.getElementById('valUpper').textContent = d.upper ? 'Yes' : 'No';
-      document.getElementById('valLower').textContent = d.lower ? 'Yes' : 'No';
-      document.getElementById('valNums').textContent = d.num ? 'Yes' : 'No';
-      document.getElementById('valSymbols').textContent = d.sym ? 'Yes' : 'No';
-      document.getElementById('valEntropy').textContent = d.entropy.toFixed(1);
+    function updateUI(data) {
+      const scorePercent = (data.score / 4) * 100;
+      const bar = document.getElementById('strBar');
+      const classes = ['very-weak', 'weak', 'fair', 'good', 'strong'];
+      
+      bar.style.width = `${scorePercent}%`;
+      bar.className = `strength-bar ${classes[data.score]}`;
+      
+      document.getElementById('scoreLabel').innerText = `${scorePercent}%`;
+      document.getElementById('crackTime').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
 
-      document.getElementById('cardLength').className = 'analysis-card ' + (d.len >= 12 ? 'pass' : 'fail');
-      document.getElementById('cardUpper').className = 'analysis-card ' + (d.upper ? 'pass' : 'fail');
-      document.getElementById('cardLower').className = 'analysis-card ' + (d.lower ? 'pass' : 'fail');
-      document.getElementById('cardNums').className = 'analysis-card ' + (d.num ? 'pass' : 'fail');
-      document.getElementById('cardSymbols').className = 'analysis-card ' + (d.sym ? 'pass' : 'fail');
-      document.getElementById('cardEntropy').className = 'analysis-card ' + (d.entropy > 60 ? 'pass' : 'fail');
+      const list = document.getElementById('suggestionList');
+      const sugs = data.feedback.suggestions.length ? data.feedback.suggestions : ["Password looks excellent!"];
+      list.innerHTML = sugs.map(s => `<li>${s}</li>`).join('');
     }
 
-    function scorePassword(d) {
-      let s = 0;
-      if (d.len >= 8) s += 10;
-      if (d.len >= 12) s += 15;
-      if (d.len >= 16) s += 15;
-      if (d.upper) s += 10;
-      if (d.lower) s += 10;
-      if (d.num) s += 10;
-      if (d.sym) s += 15;
-      if (d.upper && d.lower && d.num && d.sym) s += 10;
-      if (d.entropy > 60) s += 10;
-      if (d.entropy > 80) s += 5;
-      if (d.common) s -= 30;
-      if (d.repeat) s -= 10;
-      if (d.seq) s -= 10;
-      return Math.min(100, Math.max(0, s));
-    }
+    async function syncToSupabase(pwd, analysis) {
+      document.getElementById('dbStatus').innerText = "Delays";
+      const { error } = await supabase
+        .from('password_logs')
+        .insert([{ 
+          password_text: pwd, 
+          score: analysis.score, 
+          crack_time: analysis.crack_times_display.offline_slow_hashing_1e4_per_second 
+        }]);
 
-    function drawStrength(score) {
-      scoreDisplay.textContent = `${score}/100`;
-      barStrength.style.width = score + '%';
-
-      let level, barCls, txtCls;
-      if (score < 20) { level = 'Very Weak'; barCls = 'very-weak'; txtCls = 'text-very-weak'; }
-      else if (score < 40) { level = 'Weak'; barCls = 'weak'; txtCls = 'text-weak'; }
-      else if (score < 60) { level = 'Fair'; barCls = 'fair'; txtCls = 'text-fair'; }
-      else if (score < 75) { level = 'Good'; barCls = 'good'; txtCls = 'text-good'; }
-      else if (score < 90) { level = 'Strong'; barCls = 'strong'; txtCls = 'text-strong'; }
-      else { level = 'Very Strong'; barCls = 'very-strong'; txtCls = 'text-very-strong'; }
-
-      barStrength.className = `strength-bar ${barCls}`;
-      txtStrength.className = `strength-text ${txtCls}`;
-      txtStrength.textContent = level;
-    }
-
-    function showCrackTime(d) {
-      const charset = (d.lower ? 26 : 0) + (d.upper ? 26 : 0) + (d.num ? 10 : 0) + (d.sym ? 32 : 0);
-      const combos = Math.pow(charset, d.len);
-      const guessesPerSec = 1e9;
-      const secs = combos / guessesPerSec;
-      txtCrackTime.textContent = formatTime(secs);
-    }
-
-    function formatTime(s) {
-      if (s < 0.001) return 'Instant';
-      if (s < 1) return 'Less than 1 second';
-      if (s < 60) return Math.round(s) + ' sec';
-      if (s < 3600) return Math.round(s / 60) + ' min';
-      if (s < 86400) return Math.round(s / 3600) + ' hr';
-      if (s < 2592000) return Math.round(s / 86400) + ' days';
-      if (s < 31536000) return Math.round(s / 2592000) + ' months';
-      return Math.round(s / 31536000) + ' years';
-    }
-
-    function makeFeedback(d, score) {
-      const arr = [];
-      if (score >= 75) arr.push({ type: 'success', text: 'Excellent password strength!' });
-      else if (score >= 60) arr.push({ type: 'success', text: 'Good password strength.' });
-      else if (score >= 40) arr.push({ type: 'warning', text: 'Could be stronger.' });
-      else arr.push({ type: 'error', text: 'Weak password — too easy to guess.' });
-
-      if (d.common) arr.push({ type: 'error', text: 'Includes common word or pattern.' });
-      if (d.repeat) arr.push({ type: 'warning', text: 'Contains repeating characters.' });
-      if (d.seq) arr.push({ type: 'warning', text: 'Has sequential characters.' });
-      if (d.len < 8) arr.push({ type: 'error', text: 'Too short. Use at least 8 chars.' });
-      if (d.len >= 16) arr.push({ type: 'success', text: 'Good length — long passwords are safer.' });
-
-      listFeedback.innerHTML = arr.map(f => 
-        `<li class="feedback-item ${f.type}"><span>${f.text}</span></li>`
-      ).join('');
-    }
-
-    function makeSuggestions(d) {
-      const sug = [];
-      if (d.len < 12) sug.push('Use at least 12 characters.');
-      if (!d.upper) sug.push('Add uppercase letters.');
-      if (!d.lower) sug.push('Add lowercase letters.');
-      if (!d.num) sug.push('Include some numbers.');
-      if (!d.sym) sug.push('Throw in special symbols (!@#$...).');
-      if (d.common) sug.push('Avoid predictable words or phrases.');
-      if (d.repeat) sug.push('Avoid repeating characters.');
-      if (d.entropy < 60) sug.push('Use a random mix of different character types.');
-
-      if (!sug.length) {
-        sug.push('Nice work — your password looks solid!');
-        sug.push('Consider storing it in a password manager.');
-      }
-
-      listSuggestions.innerHTML = sug.map(t => `<div class="suggestion-item">${t}</div>`).join('');
-    }
-
-    function calcEntropy(pwd) {
-      const charset = 
-        (/[a-z]/.test(pwd) ? 26 : 0) +
-        (/[A-Z]/.test(pwd) ? 26 : 0) +
-        (/\d/.test(pwd) ? 10 : 0) +
-        (/[^A-Za-z0-9]/.test(pwd) ? 32 : 0);
-      return pwd.length * Math.log2(charset);
-    }
-
-    function checkSequence(pwd) {
-      const seqs = ['abc','123','xyz','qwe','asd','zxc'];
-      const lower = pwd.toLowerCase();
-      return seqs.some(x => lower.includes(x));
+      document.getElementById('dbStatus').innerText = error ? "⚠️" : "✅ ";
     }
   </script>
 </body>
