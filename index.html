@@ -3,81 +3,896 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aura | Password Intelligence</title>
+<title>Password Intelligence Audit</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#6366f1;--danger:#ef4444;--ok:#22c55e;--text:#1e1b4b;--text-light:#475569}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8f9fa;color:var(--text);min-height:100vh;padding:20px;position:relative}body::before{content:'';position:fixed;inset:0;background:linear-gradient(135deg,#fdfbfb 0%,#ebedee 100%);z-index:-1}.mode-banner{background:rgba(255,255,255,0.9);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px 20px;max-width:650px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)}.mode-banner.safe{border-color:rgba(34,197,94,0.2)}.mode-info{flex:1}.mode-info h3{font-size:0.85rem;font-weight:700;margin-bottom:4px;color:var(--text)}.mode-info p{font-size:0.75rem;color:var(--text-light)}.mode-toggle-btn{background:var(--primary);color:white;padding:8px 16px;border-radius:8px;border:none;font-weight:700;font-size:0.75rem;cursor:pointer;text-transform:uppercase;transition:all 0.3s;white-space:nowrap}.mode-toggle-btn:hover{transform:translateY(-1px);opacity:0.9}.mode-toggle-btn.danger{background:var(--danger)}.container{background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.08);border-radius:24px;padding:50px;max-width:650px;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,0.08)}header{text-align:center;margin-bottom:40px}header h2{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.subtitle{margin-top:8px;font-size:0.9rem;color:var(--text-light)}.input-group{margin-bottom:28px;position:relative}label{display:block;font-size:0.75rem;font-weight:800;margin-left:16px;margin-bottom:8px;text-transform:uppercase}input{width:100%;padding:20px 24px;border-radius:16px;border:1px solid rgba(0,0,0,0.1);font-size:1rem;background:white;outline:none;transition:all 0.3s;font-family:'Plus Jakarta Sans',sans-serif}input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,0.1);transform:translateY(-1px)}.password-toggle{position:absolute;right:20px;top:38px;font-size:0.75rem;font-weight:800;color:var(--primary);cursor:pointer;text-transform:uppercase}.btn-check{width:100%;background:linear-gradient(135deg,var(--primary),#4f46e5);color:white;padding:20px;border-radius:16px;border:none;font-weight:800;font-size:1rem;cursor:pointer;transition:all 0.3s;text-transform:uppercase;box-shadow:0 4px 12px rgba(99,102,241,0.3)}.btn-check:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(99,102,241,0.4)}#auraResults{display:none;margin-top:40px;padding-top:40px;border-top:1px solid rgba(0,0,0,0.08)}.results-header{display:flex;justify-content:space-between;align-items:baseline}#pctText{font-size:3rem;font-weight:800;background:linear-gradient(135deg,var(--primary),#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.meter-container{height:12px;background:rgba(0,0,0,0.05);border-radius:999px;margin:24px 0;overflow:hidden}.meter-bar{height:100%;width:0%;border-radius:999px;transition:width 1.4s cubic-bezier(0.16,1,0.3,1)}.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:28px}@media(min-width:769px){.stats-grid{grid-template-columns:repeat(4,1fr)}}.stat-card{background:white;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px;transition:all 0.3s}.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.08)}.stat-title{font-size:0.65rem;font-weight:800;color:var(--text-light);text-transform:uppercase}.stat-val{display:block;font-size:1rem;font-weight:700;margin-top:8px}.analysis-summary{margin-top:28px;padding:24px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.1);border-radius:16px}.analysis-summary h4{font-size:1rem;font-weight:800;margin-bottom:12px;text-transform:uppercase}.verdict{display:inline-block;padding:8px 16px;border-radius:8px;font-weight:800;font-size:0.85rem;margin-top:8px;text-transform:uppercase}.verdict.excellent{background:rgba(34,197,94,0.15);color:#15803d}.verdict.good{background:rgba(129,140,248,0.15);color:#4338ca}.verdict.fair{background:rgba(251,191,36,0.15);color:#b45309}.verdict.poor{background:rgba(251,146,60,0.15);color:#c2410c}.verdict.critical{background:rgba(239,68,68,0.15);color:#dc2626}@media(max-width:768px){.mode-banner{flex-direction:column;align-items:flex-start;gap:12px}.mode-toggle-btn{width:100%}.container{padding:30px 25px}}.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 0.3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}.modal{background:linear-gradient(180deg,#1a0a0a 0%,#0d0404 100%);border:2px solid #dc2626;border-radius:16px;padding:48px 40px;max-width:500px;width:90%;box-shadow:0 20px 60px rgba(220,38,38,0.4),0 0 0 1px rgba(220,38,38,0.3) inset;text-align:center;animation:modalSlide 0.4s cubic-bezier(0.16,1,0.3,1);position:relative}@keyframes modalSlide{from{opacity:0;transform:translateY(40px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}.modal-header{font-size:1.8rem;font-weight:800;color:#ff4444;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px;text-shadow:0 2px 12px rgba(255,68,68,0.5)}.modal-account{background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);padding:16px 20px;border-radius:12px;margin-bottom:24px;font-size:0.95rem;color:#ffcccc}.modal-account strong{color:#ff6666;font-weight:800;display:block;margin-top:4px;font-size:1.1rem}.modal-body{color:#e5e5e5;font-size:1rem;line-height:1.7;margin-bottom:32px}.modal-actions{display:flex;flex-direction:column;gap:12px}.modal-btn{padding:16px 24px;border-radius:12px;border:none;font-weight:800;font-size:0.9rem;cursor:pointer;transition:all 0.3s;text-transform:uppercase;letter-spacing:0.5px;text-decoration:none;display:block;text-align:center}.modal-btn-primary{background:linear-gradient(135deg,#dc2626 0%,#991b1b 100%);color:white;box-shadow:0 4px 16px rgba(220,38,38,0.4)}.modal-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(220,38,38,0.6)}.modal-btn-secondary{background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2)}.modal-btn-secondary:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7)}.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;line-height:1}.modal-close:hover{background:rgba(220,38,38,0.2);color:white;transform:rotate(90deg)}@media(max-width:768px){.modal{padding:36px 28px}.modal-header{font-size:1.4rem}}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --accent-primary: #000000;
+  --accent-secondary: #333333;
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --success: #000000;
+  --warning: #333333;
+  --danger: #000000;
+  --glass-border: rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,.02) 35px, rgba(0,0,0,.02) 70px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 30px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel {
+  background: var(--bg-primary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 40px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);
+  transition: all 0.3s ease;
+}
+
+.panel:hover {
+  box-shadow: 12px 12px 0 rgba(0, 0, 0, 1);
+  transform: translate(-2px, -2px);
+}
+
+/* LEFT PANEL - Input */
+.input-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -2px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
+.link-banner {
+  background: var(--accent-primary);
+  border: 2px solid var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 20px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.link-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.link-banner:hover::before {
+  left: 100%;
+}
+
+.link-banner:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.link-content {
+  flex: 1;
+}
+
+.link-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--bg-primary);
+}
+
+.link-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.link-arrow {
+  font-size: 1.5rem;
+  color: var(--bg-primary);
+  transition: transform 0.3s ease;
+}
+
+.link-banner:hover .link-arrow {
+  transform: translateX(5px);
+}
+
+.input-group {
+  animation: slideIn 0.5s ease-out backwards;
+}
+
+.input-group:nth-child(1) { animation-delay: 0.1s; }
+.input-group:nth-child(2) { animation-delay: 0.2s; }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+input {
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 0;
+  border: 2px solid var(--accent-primary);
+  font-size: 1rem;
+  background: var(--bg-secondary);
+  outline: none;
+  transition: all 0.3s;
+  font-family: 'Outfit', sans-serif;
+}
+
+input:focus {
+  background: var(--bg-primary);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  transform: translate(-2px, -2px);
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: var(--accent-secondary);
+}
+
+.btn-check {
+  width: 100%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.btn-check::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-check:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-check:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-check:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-check:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-check span {
+  position: relative;
+  z-index: 1;
+}
+
+/* RIGHT PANEL - Results */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+#auraResults {
+  display: none;
+  animation: fadeIn 0.6s ease-out;
+}
+
+#auraResults.show {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.score-display {
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.score-display:hover {
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+  transform: translate(-2px, -2px);
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+#pctText {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.score-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.meter-container {
+  height: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 0;
+  border: 1px solid var(--accent-primary);
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 0;
+  transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.meter-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.1) 10px,
+    rgba(255, 255, 255, 0.1) 20px
+  );
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media(min-width: 769px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+}
+
+.stat-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.stat-val {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.analysis-summary {
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.analysis-summary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+}
+
+.analysis-summary h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.analysis-summary p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.verdict {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid var(--accent-primary);
+}
+
+.verdict.excellent {
+  background: var(--bg-primary);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.verdict.good {
+  background: var(--bg-primary);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+}
+
+.verdict.fair {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.verdict.poor {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.verdict.critical {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.placeholder-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 30px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  min-height: 400px;
+}
+
+.placeholder-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  color: var(--text-muted);
+}
+
+.placeholder-text {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-primary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 12px 12px 0 rgba(0, 0, 0, 1);
+  text-align: center;
+  animation: modalSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal-account {
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  padding: 16px 20px;
+  border-radius: 0;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.modal-account strong {
+  color: var(--accent-primary);
+  font-weight: 800;
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
+}
+
+.modal-body {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-btn {
+  padding: 16px 24px;
+  border-radius: 0;
+  border: 2px solid var(--accent-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+}
+
+.modal-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid var(--glass-border);
+}
+
+.modal-btn-secondary:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  border: 2px solid var(--glass-border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: rotate(90deg);
+  border-color: var(--accent-primary);
+}
+
+/* Site Footer */
+.site-footer {
+  width: 100%;
+  background: var(--bg-primary);
+  border-top: 2px solid var(--accent-primary);
+  padding: 30px 20px;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.mode-toggle-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.mode-toggle-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  border-radius: 0;
+  border: 1px solid var(--glass-border);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mode-toggle-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.mode-toggle-btn.storage-mode {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.mode-description {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Copyright Footer */
+.copyright {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+    max-width: 700px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .panel {
+    padding: 30px 25px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  #pctText {
+    font-size: 2.5rem;
+  }
+
+  .modal-header {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .mode-toggle-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .link-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="mode-banner" id="modeBanner">
-  <div class="mode-info">
-    <h3>Data Storage Enabled</h3>
-    <p>Analysis data is being saved</p>
-  </div>
-  <button class="mode-toggle-btn" id="toggleMode" onclick="toggleSafeMode()">Switch to Client-Side Mode</button>
-</div>
-
+<div class="main-wrapper">
 <div class="container">
-<header>
-  <h2>Password Intelligence Audit</h2>
-  <p class="subtitle">Strength, entropy, and exposure evaluation</p>
-</header>
+  <!-- LEFT PANEL: Input -->
+  <div class="panel input-panel">
+    <div class="header">
+      <h1>Password<br>Intelligence</h1>
+      <p class="subtitle">Strength, entropy, and exposure evaluation</p>
+    </div>
 
-<div class="input-group">
-  <label>Where is this password used?</label>
-  <input id="accInput" placeholder="Gmail, Instagram, School Portal" maxlength="100">
-</div>
+    <a href="https://aaks-hath.github.io/Password-Generator" class="link-banner">
+      <div class="link-content">
+        <div class="link-title"><i data-lucide="key-round" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i> Generate Secure Password</div>
+        <div class="link-desc">Create ultra-secure passwords instantly</div>
+      </div>
+      <div class="link-arrow"><i data-lucide="arrow-right"></i></div>
+    </a>
 
-<div class="input-group">
-  <label>Password</label>
-  <input type="password" id="pwdInput" placeholder="••••••••" maxlength="128">
-  <div class="password-toggle" id="togglePwd">Show</div>
-</div>
+    <div class="input-group">
+      <label><i data-lucide="globe" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Where is this password used?</label>
+      <input id="accInput" placeholder="Gmail, Instagram, School Portal" maxlength="100">
+    </div>
 
-<button class="btn-check" id="checkBtn">Run Security Audit</button>
+    <div class="input-group">
+      <label><i data-lucide="lock" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Password</label>
+      <div class="password-input-wrapper">
+        <input type="password" id="pwdInput" placeholder="••••••••" maxlength="128">
+        <div class="password-toggle" id="togglePwd">Show</div>
+      </div>
+    </div>
 
-<div id="auraResults">
-  <div class="results-header">
-    <span id="pctText">0%</span>
-    <span style="font-size:0.75rem;font-weight:800;color:var(--text-light);text-transform:uppercase">AUDIT SCORE</span>
+    <button class="btn-check" id="checkBtn">
+      <span><i data-lucide="search" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>Run Security Audit</span>
+    </button>
   </div>
 
-  <div class="meter-container">
-    <div class="meter-bar" id="meterBar"></div>
-  </div>
+  <!-- RIGHT PANEL: Results -->
+  <div class="panel results-panel">
+    <div class="placeholder-state" id="placeholderState">
+      <i data-lucide="shield-question" class="placeholder-icon"></i>
+      <p class="placeholder-text">Enter a password to analyze its security</p>
+    </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <span class="stat-title">Crack Time</span>
-      <span class="stat-val" id="statTime">-</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-title">Entropy</span>
-      <span class="stat-val" id="statEnt">0 bits</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-title">Complexity</span>
-      <span class="stat-val" id="statComplex">-</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-title">Security Level</span>
-      <span class="stat-val" id="statSecurity">-</span>
+    <div id="auraResults">
+      <div class="score-display">
+        <div class="results-header">
+          <span id="pctText">0%</span>
+          <span class="score-label"><i data-lucide="gauge" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>AUDIT SCORE</span>
+        </div>
+
+        <div class="meter-container">
+          <div class="meter-bar" id="meterBar"></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-title"><i data-lucide="clock" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Crack Time</span>
+          <span class="stat-val" id="statTime">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title"><i data-lucide="binary" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Entropy</span>
+          <span class="stat-val" id="statEnt">0 bits</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title"><i data-lucide="layers" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Complexity</span>
+          <span class="stat-val" id="statComplex">-</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title"><i data-lucide="shield-check" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>Security Level</span>
+          <span class="stat-val" id="statSecurity">-</span>
+        </div>
+      </div>
+
+      <div class="analysis-summary" id="analysisSummary"></div>
     </div>
   </div>
-
-  <div class="analysis-summary" id="analysisSummary"></div>
+</div>
 </div>
 
-</div>
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="mode-toggle-section">
+      <button class="mode-toggle-btn" id="toggleMode" onclick="toggleSafeMode()">
+        <i data-lucide="database" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>
+        <span id="modeText">Storage Mode</span>
+      </button>
+      <p class="mode-description" id="modeDescription">Analysis data is being saved to database</p>
+    </div>
+    <div class="copyright">
+      © 2026 Aakshat Hariharan. All rights reserved.
+    </div>
+  </div>
+</footer>
 
 <div class="modal-overlay" id="weakPasswordModal">
   <div class="modal">
     <button class="modal-close" id="closeModal">&times;</button>
-    <h2 class="modal-header">Security Alert</h2>
+    <h2 class="modal-header"><i data-lucide="alert-triangle" style="width: 32px; height: 32px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>Security Alert</h2>
     <div class="modal-account">
       Compromised Account
       <strong id="weakAccount">Unknown</strong>
@@ -86,7 +901,10 @@
       This password has critical security vulnerabilities. Attackers can exploit weak passwords in seconds using automated tools. Your account is at serious risk of unauthorized access.
     </p>
     <div class="modal-actions">
-      <a href="https://aaks-hath.github.io/Password-Generator" target="_blank" class="modal-btn modal-btn-primary">Generate Secure Password</a>
+      <a href="https://aaks-hath.github.io/Password-Generator" target="_blank" class="modal-btn modal-btn-primary">
+        <i data-lucide="key-round" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>
+        Generate Secure Password
+      </a>
       <button class="modal-btn modal-btn-secondary" id="dismissModal">Continue with Current Password</button>
     </div>
   </div>
@@ -102,30 +920,29 @@ const pwdInput = document.getElementById('pwdInput');
 const accInput = document.getElementById('accInput');
 const checkBtn = document.getElementById('checkBtn');
 const results = document.getElementById('auraResults');
+const placeholderState = document.getElementById('placeholderState');
 const togglePwd = document.getElementById('togglePwd');
-const modeBanner = document.getElementById('modeBanner');
-const toggleModeBtn = document.getElementById('toggleMode');
 const weakPasswordModal = document.getElementById('weakPasswordModal');
 const closeModalBtn = document.getElementById('closeModal');
 const dismissModalBtn = document.getElementById('dismissModal');
 
 function toggleSafeMode() {
   safeMode = !safeMode;
-  const modeInfo = modeBanner.querySelector('.mode-info');
+  const modeText = document.getElementById('modeText');
+  const modeDescription = document.getElementById('modeDescription');
+  const toggleBtn = document.getElementById('toggleMode');
   
   if (safeMode) {
-    modeBanner.classList.add('safe');
-    modeInfo.querySelector('h3').textContent = 'Safe Mode Active';
-    modeInfo.querySelector('p').textContent = 'Client-side analysis only, no data stored';
-    toggleModeBtn.textContent = 'Switch to Storage Mode';
-    toggleModeBtn.classList.add('danger');
+    toggleBtn.classList.remove('storage-mode');
+    modeText.textContent = 'Client-Side Mode';
+    modeDescription.textContent = 'Analysis runs locally, no data stored';
   } else {
-    modeBanner.classList.remove('safe');
-    modeInfo.querySelector('h3').textContent = 'Internal Storage Enabled';
-    modeInfo.querySelector('p').textContent = 'Analysis data is being saved';
-    toggleModeBtn.textContent = 'Switch to Client-Side Mode';
-    toggleModeBtn.classList.remove('danger');
+    toggleBtn.classList.add('storage-mode');
+    modeText.textContent = 'Storage Mode';
+    modeDescription.textContent = 'Analysis data is being saved';
   }
+  
+  lucide.createIcons();
 }
 
 togglePwd.addEventListener('click', () => {
@@ -153,8 +970,9 @@ checkBtn.onclick = async () => {
   }
 
   checkBtn.disabled = true;
-  checkBtn.innerText = 'ANALYZING...';
+  checkBtn.innerHTML = '<span><i data-lucide="loader" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px; animation: spin 1s linear infinite;"></i>ANALYZING...</span>';
   checkBtn.style.opacity = '0.7';
+  lucide.createIcons();
 
   const analysis = zxcvbn(pwd, [accInput.value.toLowerCase()]);
   const pct = (analysis.score / 4) * 100;
@@ -177,8 +995,9 @@ checkBtn.onclick = async () => {
         console.error('Database error:', error);
         alert('Failed to save analysis.');
         checkBtn.disabled = false;
-        checkBtn.innerText = 'RUN SECURITY AUDIT';
+        checkBtn.innerHTML = '<span><i data-lucide="search" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>RUN SECURITY AUDIT</span>';
         checkBtn.style.opacity = '1';
+        lucide.createIcons();
         return;
       }
       console.log('Password saved to database at', timestamp);
@@ -186,8 +1005,9 @@ checkBtn.onclick = async () => {
       console.error('Failed to save:', err);
       alert('Database connection failed.');
       checkBtn.disabled = false;
-      checkBtn.innerText = 'RUN SECURITY AUDIT';
+      checkBtn.innerHTML = '<span><i data-lucide="search" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>RUN SECURITY AUDIT</span>';
       checkBtn.style.opacity = '1';
+      lucide.createIcons();
       return;
     }
   } else {
@@ -195,9 +1015,10 @@ checkBtn.onclick = async () => {
   }
 
   // Show results
-  results.style.display = 'block';
+  placeholderState.style.display = 'none';
+  results.classList.add('show');
 
-  const colors = ['#ef4444','#fb923c','#fbbf24','#818cf8','#6366f1'];
+  const colors = ['#ef4444','#fb923c','#fbbf24','#666666','#000000'];
   document.getElementById('pctText').innerText = pct + '%';
   document.getElementById('meterBar').style.width = pct + '%';
   document.getElementById('meterBar').style.background = colors[analysis.score];
@@ -222,7 +1043,7 @@ checkBtn.onclick = async () => {
   document.getElementById('statSecurity').innerText = securityLevel;
 
   // Analysis Summary
-  let summaryHTML = '<h4>Overall Assessment</h4>';
+  let summaryHTML = '<h4><i data-lucide="file-text" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>Overall Assessment</h4>';
   let verdictClass = '';
   let verdictText = '';
   
@@ -254,13 +1075,14 @@ checkBtn.onclick = async () => {
   // Show modal for weak passwords (score < 50%)
   if (pct < 50) {
     document.getElementById('weakAccount').textContent = accInput.value;
-    weakPasswordModal.style.display = 'flex';
+    weakPasswordModal.classList.add('show');
     document.body.style.overflow = 'hidden';
   }
 
   checkBtn.disabled = false;
-  checkBtn.innerText = 'RUN SECURITY AUDIT';
+  checkBtn.innerHTML = '<span><i data-lucide="search" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>RUN SECURITY AUDIT</span>';
   checkBtn.style.opacity = '1';
+  lucide.createIcons();
 };
 
 function getCharsetSize(pwd) {
@@ -274,22 +1096,36 @@ function getCharsetSize(pwd) {
 
 // Modal close handlers
 closeModalBtn.addEventListener('click', () => {
-  weakPasswordModal.style.display = 'none';
+  weakPasswordModal.classList.remove('show');
   document.body.style.overflow = 'auto';
 });
 
 dismissModalBtn.addEventListener('click', () => {
-  weakPasswordModal.style.display = 'none';
+  weakPasswordModal.classList.remove('show');
   document.body.style.overflow = 'auto';
 });
 
 weakPasswordModal.addEventListener('click', (e) => {
   if (e.target === weakPasswordModal) {
-    weakPasswordModal.style.display = 'none';
+    weakPasswordModal.classList.remove('show');
     document.body.style.overflow = 'auto';
   }
 });
+
+// Initialize Lucide icons
+window.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  // Initialize mode toggle button
+  document.getElementById('toggleMode').classList.add('storage-mode');
+});
 </script>
+
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
 
 </body>
 </html>
